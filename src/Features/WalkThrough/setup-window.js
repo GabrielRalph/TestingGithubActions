@@ -2,7 +2,7 @@ import { GridIcon, GridLayout } from "../../Utilities/Buttons/grid-icon.js";
 import { OccupiableWindow } from "../features-interface.js";
 import { relURL } from "../../Utilities/usefull-funcs.js";
 import { MaskOverlay } from "./mask-overlay.js";
-import { set, ref } from "../../Firebase/firebase.js";
+import WalkThroughFeature from "./walk-through.js";
 
 
 /* ================= PROFILE ================= */
@@ -147,6 +147,11 @@ customElements.define('access-method-card', AccessMethodCard);
 
 
 class ProfileSelectionPage {
+    /**
+     * 
+     * @param {WalkThroughFeature} feature 
+     * @param {*} onClose 
+     */
     constructor(feature, onClose) {
         this.feature = feature;
         this.onClose = onClose;
@@ -339,17 +344,9 @@ class ProfileSelectionPage {
 
             if (!this._selectedCard && profileName) {
                 try {
-                    const Settings = await import("/src/Features/Settings/settings-wrapper.js");
-
-                   
                     
-
-                    const hostUID = this.feature._session?.hostUID
-                        || this.feature.session?.hostUID
-                        || this.feature.hostUID;
-
                     if (hostUID) {
-                        const newID = await Settings.createProfile(hostUID, profileName);
+                        const newID = await this.feature.session.settings.createProfile(profileName);
                         console.log("Created new profile:", profileName, "with ID:", newID);
                     } else {
                         console.error("Could not find hostUID to create profile");
@@ -645,6 +642,10 @@ class AccessMethodPage {
 const SETUP_MASK_COLOR = 'rgba(0, 100, 180, 0.75)';
 
 class SetUpWindow extends OccupiableWindow {
+    /**
+     * 
+     * @param {WalkThroughFeature} feature 
+     */
     constructor(feature) {
         super("setup-window");
         this.feature = feature;
@@ -683,8 +684,9 @@ class SetUpWindow extends OccupiableWindow {
 
         let profiles = [];
         try {
-            const Settings = await import("/src/Features/Settings/settings-wrapper.js");
-            profiles = Settings.getProfiles().map(p => ({ name: p.name, profileID: p.profileID }));
+            // const newProfile = await this.feature.session.settings.getProfiles();
+            profiles = this.feature.session.settings.profiles.map(p => ({ name: p.name, profileID: p.profileID }));
+            
             if (profiles.length > 0) {
                 this.feature.sdata.set("profiles", profiles);
             }
@@ -721,8 +723,13 @@ class SetUpWindow extends OccupiableWindow {
         });
 
 
+
+
         await this.showProfileSelection();
+
     }
+
+    static get fixToolBarWhenOpen() {return true;}
     async close() {
         await this.forceClose();
     }
@@ -734,46 +741,28 @@ class SetUpWindow extends OccupiableWindow {
         this._setMaskColor(SETUP_MASK_COLOR);
 
 
-        let Settings;
-        try {
-            Settings = await import("/src/Features/Settings/settings-wrapper.js");
-        } catch (error) {
-            console.warn("Could not load settings-wrapper:", error);
-        }
-
+        
         this._profilePage = new ProfileSelectionPage(
             this.feature,
             async () => await this.forceClose(true)
         );
         this._pageRoot.appendChild(this._profilePage._root);
 
-        if (Settings) {
           
-            const hostUID = this.feature._session?.hostUID
-                || this.feature.session?.hostUID
-                || this.feature.hostUID;
 
-            if (hostUID) {
-
-                this._unwatchProfiles = Settings.watchProfiles(hostUID, () => {
-                    const profiles = Settings.getProfiles().map(p => ({
-                        name: p.name,
-                        profileID: p.profileID
-                    }));
-                    if (profiles.length > 0) {
-                        this.feature.sdata.set("profiles", profiles);
-                    }
-                    if (this._profilePage) {
-                        this._profilePage.renderProfiles(profiles);
-                    }
-                });
-            } else {
-                console.warn("No hostUID found, falling back to Firebase profiles");
-                await this._renderFallbackProfiles();
+        this._unwatchProfiles = this.feature.session.settings.addEventListener("profiles-change", () => {
+            const profiles = this.feature.session.settings.getProfiles().map(p => ({
+                name: p.name,
+                profileID: p.profileID
+            }));
+            if (profiles.length > 0) {
+                this.feature.sdata.set("profiles", profiles);
             }
-        } else {
-            await this._renderFallbackProfiles();
-        }
+            if (this._profilePage) {
+                this._profilePage.renderProfiles(profiles);
+            }
+        });
+
 
         this.feature.sdata.onValue("setupState", (state) => {
             if (!state) return;
@@ -832,9 +821,9 @@ class SetUpWindow extends OccupiableWindow {
         this._setMaskColor(SETUP_MASK_COLOR);
 
         const methods = [
-            { name: "Eye Gaze", color: "#F4E5A5", iconSVG: `<img src="${relURL("../../Utilities/Icons/IconLibrary/i_eye.svg", import.meta)}" style="width:160px;height:160px;"/>` },
-            { name: "Switch", color: "#C41E3A", iconSVG: `<img src="${relURL("../../Utilities/Icons/IconLibrary/i_switch.svg", import.meta)}" style="width:160px;height:160px;"/>` },
-            { name: "Cursor", color: "#87CEEB", icon: "➤", iconSVG: `<img src="${relURL("../../Utilities/Icons/IconLibrary/i_mouse.svg", import.meta)}" style="width:160px;height:160px;"/>` }
+            { name: "Eye Gaze", color: "#F4E5A5", symbol: "eye" },
+            { name: "Switch", color: "#C41E3A", symbol: "switch" },
+            { name: "Cursor", color: "#87CEEB", symbol: "mouse" }
         ];
 
         this._accessPage = new AccessMethodPage(
@@ -905,8 +894,7 @@ class SetUpWindow extends OccupiableWindow {
         console.log("feature sdata path:", this.feature.sdata?.getFirebaseName?.());
 
         if (openDefault) {
-            const sid = window.sessionConnection?.sid;
-            await set(ref(`session-data/${sid}/session-main/occupier`), "default");
+            this.feature.session.openWindow("default");
         }
     }
 

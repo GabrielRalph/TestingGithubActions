@@ -581,9 +581,7 @@ class WalkthroughController {
         this.overlay.mask.stop();
 
         if (!this._isUpdatingFromRemote) {
-            const sid = window.sessionConnection?.sid;
-            const { set, ref } = await import("../../Firebase/firebase.js");
-            await set(ref(`session-data/${sid}/session-main/occupier`), "default");
+            this.session.openWindow("default");
         }
     }
 
@@ -1332,6 +1330,7 @@ export default class WalkThroughFeature extends Features {
 
     async initialise() {
         await this.initialising;
+        this.sdata.hostUID;
 
         this.session.toolBar.addMenuItem("access", {
             name: "walk-through",

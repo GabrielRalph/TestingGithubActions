@@ -652,19 +652,17 @@ export class FeedbackWindow extends OccupiableWindow {
         session.videoCall.addEventListener("facepoints", ({data}) => this._setUsersFacePoints(sdata.them, data));
  
         // Get user names
-        this.hostName = session.settings.get("host/profileSettings/name") || "Host";
-        this.participantName = session.settings.get("participant/profileSettings/name") || "Participant";
-
-        // Watch settings for changes in eye gaze enabled status and user names
-        session.settings.addEventListener("change", (e) => {
-            if (e.path.endsWith("eye-gaze-enabled")) {
-                this._updateUsersStatus(e.path.split("/")[0]);
-
-            } else if (e.path.endsWith("profileSettings/name")) {
-                let user = e.path.split("/")[0];
-                this._updateUsersName(user, e.value || (user === "host" ? "Host" : "Participant"));
-            }
+        session.settings.onValue("host/profileSettings/name", name => {
+            this.hostName = name || "Host";
+            this._updateUsersName("host", this.hostName);
         })
+        session.settings.onValue("participant/profileSettings/name", name => {
+            this.participantName = name || "Participant";
+            this._updateUsersName("participant", this.participantName);
+        })
+        // Watch settings for changes in eye gaze enabled status and user names
+        session.settings.onValue("host/eye-gaze-enabled", enabled => this._updateUsersStatus("host"))
+        session.settings.onValue("participant/eye-gaze-enabled", enabled => this._updateUsersStatus("participant"))
 
 
         sdata.onUser("joined", this._updateUsersStatus.bind(this))

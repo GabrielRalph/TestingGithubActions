@@ -513,17 +513,12 @@ export default class AccessControl extends Features {
 
     initialise(){
         this.session.eyeGaze.addEyeDataListener(this._onEyeData.bind(this));
-        this.session.settings.addEventListener("change", (e) => {
-            let path = e.path.split("/");
-            let [user, type, setting] = path;
-            if (user == this.sdata.me && type == "access") {
-                if (setting == "switchTime") {
-                    SwitchTime = e.value;
-                } else if (setting == "dwellTime") {
-                    DwellTime = e.value;
-                }
-            }
-        })
+        this.session.settings.onValue(`${this.sdata.me}/access/switchTime`, (value) => {
+            SwitchTime = value;
+        });
+        this.session.settings.onValue(`${this.sdata.me}/access/dwellTime`, (value) => {
+            DwellTime = value;
+        });
     }
 
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */

@@ -63,13 +63,13 @@ export function chooseProfile(profileID) {
             participantSettings = `users/${HostUID}/settings/profiles/${profileID}`
         } 
 
-        ParticipantSettings = new SettingsFrame(new FirebaseFrame(participantSettings), ParticipantSettingOptions);
+        ParticipantSettings = new SettingsFrame(new FirebaseFrame(participantSettings), ParticipantSettingOptions, 
+            (path,value) => {
+                for (let listener of settingChangeListeners) {
+                    listener("participant/"+path, value);
+                }
+        });
         ParticipantSettings.profileID = profileID;
-        ParticipantSettings.addChangeListener((path,value) => {
-            for (let listener of settingChangeListeners) {
-                listener("participant/"+path, value);
-            }
-        })
     }
 }
 

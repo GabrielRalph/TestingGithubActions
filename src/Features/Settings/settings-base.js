@@ -463,9 +463,7 @@ class Setting {
         this._listener = sdata.onValue(name, (value) => {
             if (value === null) {
                 value = options.default;
-                console.log(`initialising setting ${name} to default value: ${value}`);
             }
-
             if (value !== this.value) {
                 this._value = value;
                 settings._onChange(name, value);
@@ -593,9 +591,12 @@ export class SettingsDescriptor {
 }
 
 export class SettingsFrame {
-    constructor(dataFrame, settingsOptions = SettingOptions) {
+    constructor(dataFrame, settingsOptions = SettingOptions, listener) {
         this.__Settings = {};
         this.__SettingsChangeListeners = new Set();
+        if (listener instanceof Function) {
+            this.__SettingsChangeListeners.add(listener);
+        }
         for (let options of settingsOptions) {
             let keys = getAllKeys(options.key);
             for (let key of keys) {

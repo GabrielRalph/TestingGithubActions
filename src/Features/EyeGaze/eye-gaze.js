@@ -148,11 +148,10 @@ export default class EyeGazeFeature extends Features {
             if (bool) {
                 startProcessing();
                 this.sdata.logChange("eye-gaze.processing", {value: true});
-                console.log("Starting eye gaze processing");
+                console.log("%cStarting eye gaze processing", "background: rgb(29, 196, 3); font-weight: bold; color: white; padding: 2px 5px; border-radius: 3px;");
             } else {
                 stopProcessing();
-                // this.sdata.logChange("eye-gaze.processing", {value: false})
-                console.log("Stopping eye gaze processing");
+                console.log("%cStopping eye gaze processing", "background: rgb(180, 45, 4); font-weight: bold; color: white; padding: 2px 5px; border-radius: 3px;");
                 this._onEyeData(null); // Clear eye data
             }
         }

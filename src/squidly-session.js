@@ -363,7 +363,7 @@ export class SquidlySessionElement extends ShadowElement {
         this.toolBar.addSelectionListener("key", async (e) => {
           // Copy the key to clipboard
           try {
-            let link = "https://squidly.com.au/V3/?" + sessionConnection.sid;
+            let link = window.location + "";
             await navigator.clipboard.writeText(link);
             this.notifications.notify(
               "Session key copied to clipboard",

@@ -148,7 +148,7 @@ const SettingOptions = [
     {
         key: [["host", "participant"], "eye-gaze-enabled"],
         type: "boolean",
-        default: true,
+        default: false,
         toIcon({value}) {
             return {
                 symbol: value ? "eye" : "noeye",
@@ -463,6 +463,7 @@ class Setting {
         this._listener = sdata.onValue(name, (value) => {
             if (value === null) {
                 value = options.default;
+                console.log(`initialising setting ${name} to default value: ${value}`);
             }
 
             if (value !== this.value) {

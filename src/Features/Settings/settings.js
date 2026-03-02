@@ -409,8 +409,11 @@ export default class SettingsFeature extends Features {
                     e.preventDefault();
                     await e.waitFor(session.openWindow(this._openPageOnBack));
                 }
-                this._openPageOnBack = null;
-                this.sdata.set("openPageOnBack", null); 
+
+                if (e.icon?.action === "home" || e.icon?.action === "back" || e.icon?.action === "exit") {
+                    this._openPageOnBack = null;
+                    this.sdata.set("openPageOnBack", null); 
+                }
             },
             "path-change": () => {
                 this.sdata.set("path", this.settingsWindow.history);
@@ -597,7 +600,18 @@ export default class SettingsFeature extends Features {
 
     async initialise() {
        let hostUID = this.sdata.hostUID;
-        await Settings.initialise(hostUID),
+       let initS = false;
+       let pid = await new Promise(r => {
+            this.sdata.onValue("profileID", (profileID) => {
+                if (!initS) {
+                    r(profileID);
+                    initS = true;
+                } else {
+                    Settings.chooseProfile(profileID);
+                }
+            });
+        });
+        await Settings.initialise(hostUID, pid);
         
         this.settingsWindow.settingsLayout = SettingsFeature.SettingsLayout;
 
@@ -620,11 +634,6 @@ export default class SettingsFeature extends Features {
 
         this.sdata.onValue("openPageOnBack", (page) => {
             this._openPageOnBack = page;
-        });
-
-        // Listen to profile changes
-        this.sdata.onValue("profileID", (profileID) => {
-            Settings.chooseProfile(profileID);
         });
 
 

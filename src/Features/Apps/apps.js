@@ -36,7 +36,7 @@ class QuizSearch extends SearchWindow {
         app: q,
         icon: {
           symbol: q.icon,
-          type: "image",
+          type: "normal",
         },
       };
     });
@@ -72,6 +72,14 @@ class AppsFrame extends OccupiableWindow {
     });
   }
 
+
+  async enterSearchMode() {
+    this.search.reset(true);
+    await this.search.show();
+
+  }
+
+
   setGridSize(rows, cols) {
     rows = Math.max(1, Math.min(20, rows || 1));
     cols = Math.max(1, Math.min(20, cols || 1));
@@ -95,9 +103,7 @@ class AppsFrame extends OccupiableWindow {
           type: "action",
           events: {
             "access-click": async (e) => {
-              await this.feature.close();
-              // Release toolbar after closing
-              this.feature.session.openWindow("default");
+              e.waitFor(this.enterSearchMode());
             },
           },
         },

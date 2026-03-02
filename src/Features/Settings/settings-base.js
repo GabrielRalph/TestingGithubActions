@@ -456,7 +456,6 @@ class Setting {
      */
     constructor(options, name, sdata, settings) {
         this.options = options;
-        this._value = null;
         this.sdata = sdata;
         this.path = name;
         this._settings = settings;
@@ -465,7 +464,6 @@ class Setting {
             
             if (value === null) {
                 value = options.default;
-                // this.sdata.set(name, value);
             }
 
             if (value !== this.value) {

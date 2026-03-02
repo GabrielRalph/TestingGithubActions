@@ -173,7 +173,7 @@ export function getSettingsAsObject() {
  * @param {string} name - The name of the setting
  */
 export function getValue(name) {
-    let value = null;
+    let value = undefined;
     if (name.startsWith("host/profileSettings")) {
         let key = name.split("/")[2];
         value = hostPresets ? (hostPresets[key] || null) : null;

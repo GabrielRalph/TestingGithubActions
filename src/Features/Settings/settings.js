@@ -397,7 +397,7 @@ export default class SettingsFeature extends Features {
             index: 35,
             onSelect: async e => e.waitFor(this._openSettingsAtHome()),
         })
- 
+
 
         // Listen to settings icon clicks in the settings window and handle navigation and actions
         this.settingsWindow.events = {
@@ -418,18 +418,10 @@ export default class SettingsFeature extends Features {
             "exit": (e) => this.dispatchEvent(e)
         }
 
+        this._pathListeners = {};
+
         // Listen to changes in settings values and update the settings window accordingly
-        Settings.addChangeListener((name, value) => {
-            this.settingsWindow.updateSettings();
-            const event = new Event("change", {bubbles: true});
-            event.path = name;
-            let [user, type, setting] = name.split("/");
-            event.user = user;
-            event.group = type;
-            event.setting = setting;
-            event.value = value;    
-            this.dispatchEvent(event);
-        });
+        Settings.addChangeListener(this._onSettingsChange.bind(this));
     }
 
     
@@ -524,6 +516,26 @@ export default class SettingsFeature extends Features {
         return id;
     }
 
+    onValue(path, callback) {
+        if (callback instanceof Function && typeof path === "string") {
+
+            if (path in this._pathListeners) {
+                this._pathListeners[path].push(callback);
+            } else {
+                this._pathListeners[path] = [callback];
+            }
+
+            // Check to see if that setting currently exists
+            // if it does, call the callback with the current 
+            // value so that the listener is up to date immediately
+
+            let value = Settings.getValue(path);
+            if (value !== undefined) {
+                callback(value);
+            }
+        }
+    }
+
     /**
      * Sets a page to open when the user tries to go back from the current page. 
      * This is used if features want to open settings but allow users to easily 
@@ -547,6 +559,22 @@ export default class SettingsFeature extends Features {
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ PRIVATE ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
+    _onSettingsChange(name, value) {
+        this.settingsWindow.updateSettings();
+        if (name in this._pathListeners) {
+            this._pathListeners[name].forEach(callback => callback(value));
+        }
+
+        const event = new Event("change", {bubbles: true});
+        event.path = name;
+        let [user, type, setting] = name.split("/");
+        event.user = user;
+        event.group = type;
+        event.setting = setting;
+        event.value = value;    
+        this.dispatchEvent(event);
+    }
+
     async _openSettingsAtHome() {
         await this.sdata.set("path", ["home"]);
         await this.session.openWindow("settings");
@@ -565,9 +593,8 @@ export default class SettingsFeature extends Features {
     }
 
     async initialise() {
-        let hostUID = this.sdata.hostUID;
+       let hostUID = this.sdata.hostUID;
         await Settings.initialise(hostUID),
-
         
         this.settingsWindow.settingsLayout = SettingsFeature.SettingsLayout;
 

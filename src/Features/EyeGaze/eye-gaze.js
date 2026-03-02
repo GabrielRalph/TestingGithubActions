@@ -242,7 +242,6 @@ export default class EyeGazeFeature extends Features {
             this._eyeGazeOn = bool;
             this._updateProcessingState();
             this.session.toolBar.setMenuItemProperty("access/eye/symbol", bool ? "eye" : "noeye");
-            this.sdata.logChange("eye-gaze.toggle", {value: bool ? "on" : "off"})
             this.sdata.set("on", bool);
         }
     }
@@ -278,11 +277,16 @@ export default class EyeGazeFeature extends Features {
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
     set _isProcessing(bool) {
+        bool = !!bool;
         if (bool != this.__isProcessing) {
             if (bool) {
                 startProcessing();
+                this.sdata.logChange("eye-gaze.processing", {value: true});
+                console.log("Starting eye gaze processing");
             } else {
                 stopProcessing();
+                this.sdata.logChange("eye-gaze.processing", {value: false})
+                console.log("Stopping eye gaze processing");
                 this._onEyeData(null); // Clear eye data
             }
         }
@@ -422,21 +426,13 @@ export default class EyeGazeFeature extends Features {
             text: "participant"
         });
 
-        this.session.settings.addEventListener("change", (e) => {
-            let path = e.path.split("/");
-            let [user, type, setting] = path;
-            if (user == this.sdata.me && type == "calibration") {
-                this.calibrationFrame[setting] = e.value;
-            } else if (user == this.me && type == "eye-gaze-enabled") {
-                this._eyeGazeDisabled = !e.value;
-                this._updateProcessingState();
-            }   
+        this.session.settings.onValue(`${this.sdata.me}/calibration/guide`, (val) => this.calibrationFrame.guide = val);
+        this.session.settings.onValue(`${this.sdata.me}/calibration/size`, (val) => this.calibrationFrame.size = val);
+        this.session.settings.onValue(`${this.sdata.me}/calibration/speed`, (val) => this.calibrationFrame.speed = val);
+        this.session.settings.onValue(`${this.sdata.me}/eye-gaze-enabled`, (val) => {
+            this._eyeGazeDisabled = !val;
+            this._updateProcessingState();
         });
-
-        this.calibrationFrame.guide = this.session.settings.get(`${this.sdata.me}/calibration/guide`);
-        this.calibrationFrame.size = this.session.settings.get(`${this.sdata.me}/calibration/size`);
-        this.calibrationFrame.speed = this.session.settings.get(`${this.sdata.me}/calibration/speed`);
-        this._eyeGazeDisabled = !this.session.settings.get(`${this.sdata.me}/eye-gaze-enabled`);
 
         addProcessListener(this._onEyeData.bind(this));
 
@@ -464,14 +460,14 @@ export default class EyeGazeFeature extends Features {
         // ration sequence
         this.sdata.onValue(`calibrating/${me}`, this._beginCalibrationSequence.bind(this));
 
-        let init = true;
+        let initC = true;
 
         // Calibration state of the other user
         this.sdata.onValue(`calibrating/${them}`, async (isCalibrating) => {
             this._areTheyCalibrating = isCalibrating;
 
             // If it isn't the initial onValue call and isCalibrating is either true or false
-            if (!init && isCalibrating !== null) {
+            if (!initC && isCalibrating !== null) {
                 // The other user is calibrating
                 if (isCalibrating === true) {
                     this.session.notifications.notify(`The ${them} is calibrating`, "info");
@@ -491,7 +487,7 @@ export default class EyeGazeFeature extends Features {
                     }
                 }
             }
-            init = false;
+            initC = false;
         });
 
         // Opening and closing the test window 

@@ -785,8 +785,9 @@ export class FeedbackWindow extends OccupiableWindow {
         }
         
         if (typeof user !== "string" || user === this.shownUser) {
-            this.feedback.userName = this[this.shownUser + "Name"];
-            this.showUserButton.displayValue = this[this.shownUser + "Name"];
+            let name = this[this.shownUser + "Name"] || this.shownUser;
+            this.feedback.userName = name;
+            this.showUserButton.displayValue = name;
         }
     }
 

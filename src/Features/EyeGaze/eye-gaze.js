@@ -44,7 +44,6 @@ export default class EyeGazeFeature extends Features {
         this.feedbackWindow = new FeedbackWindow(session, sdata);
         this.calibrationWindow = new CalibrationScreenArea();
         this.dummyFrame = new SquidlyFeatureWindow("div"); // Used to measure calibration frame bbox
-        this.restButton = new RestButton();
 
         this.calibrationFrame = this.calibrationWindow.calibrationFrame;
 
@@ -69,7 +68,6 @@ export default class EyeGazeFeature extends Features {
             "close": (e) => e.waitFor(this._showTestScreen(null)),
         }
         
-  
         // Update cursor positions
         this.addEyeDataListener((eyeP, bbox, hidden) => {
             let key = this.sdata.me + "-eyes";

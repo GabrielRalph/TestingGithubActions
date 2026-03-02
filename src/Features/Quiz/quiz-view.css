@@ -191,6 +191,6 @@ quiz-view > access-button[quiz-icon] {
 }
 
 .popup-prompt grid-layout {
-    width: calc(0.8 * var(--width));
-    height: calc(0.39 * var(--width));
+    width: calc(0.5 * var(--width));
+    height: calc(0.25 * var(--width));
 }

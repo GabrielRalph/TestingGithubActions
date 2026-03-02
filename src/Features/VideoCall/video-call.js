@@ -373,9 +373,6 @@ export default class VideoCall extends Features {
                 this._setWidgetUserImage(presets.image, "host");
             }
 
-            // set the participant's name and image
-            this._setWidgetUserName(this.session.settings.get("participant/profileSettings/name"), "participant");
-            this._setWidgetUserImage(this.session.settings.get("participant/profileSettings/image"), "participant");
 
             // get new stream from webcam
             let stream = getStream(2);
@@ -413,24 +410,15 @@ export default class VideoCall extends Features {
                 }
             ])
             
-        
-            // listen to profile settings changes
-            this.session.settings.addEventListener("change", (e) => {
-                let {user, group, setting, value, path} = e;
-                if (user == this.sdata.me) {
-                    if (group == "volume" && setting == "level") {
-                        this._setVolume(value);
-                    }
-                } 
-                
-                if (path == "participant/profileSettings/name") {
-                        this._setWidgetUserName(value, "participant");
-                }
-
-                if (path == "participant/profileSettings/image") {
-                        this._setWidgetUserImage(value, "participant");
-                }
-            });
+            this.session.settings.onValue(`${this.sdata.me}/volume/level`, (value) => {
+                this._setVolume(value);
+            })
+            this.session.settings.onValue("participant/profileSettings/name", (value) => {
+                this._setWidgetUserName(value, "participant");
+            })
+            this.session.settings.onValue("participant/profileSettings/image", (value) => {
+                this._setWidgetUserImage(value, "participant");
+            })
 
 
             // Listen to changes in audio output device and update sinkId accordingly
@@ -452,7 +440,6 @@ export default class VideoCall extends Features {
                 }
             })
 
-            this._setVolume(this.session.settings.get(`${this.sdata.me}/volume/level`));
 
             this._setWidgetVisibility(this.sdata.me, true);
         } else {

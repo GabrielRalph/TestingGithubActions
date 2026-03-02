@@ -214,7 +214,7 @@ export class SessionDataFrame extends FirebaseFrame {
     } catch (e) {
       let stack = e.stack.split("\n").slice(1).map(line => line.indexOf("firebase-frame.js") !== -1).filter(a => a);
       if (stack.length > 0) {
-        throw "Log entries cannot be made from within a firebase callback. Please make log entries in response to a user event.";
+        console.warn("Log entries cannot be made from within a firebase callback. Please make log entries in response to a user event.");
       }
     }
 

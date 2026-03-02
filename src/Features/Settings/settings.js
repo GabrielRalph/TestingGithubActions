@@ -504,6 +504,9 @@ export default class SettingsFeature extends Features {
     chooseProfile(profileID) {
         if (this.sdata.me === "host") {
             this.sdata.set("profileID", profileID);
+            if (profileID === null) {
+                profileID = "default";
+            }
             this.sdata.logChange("settings.profile", {value: profileID});
         }
     }

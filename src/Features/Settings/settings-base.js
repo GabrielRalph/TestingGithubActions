@@ -461,7 +461,6 @@ class Setting {
         this._settings = settings;
 
         this._listener = sdata.onValue(name, (value) => {
-            
             if (value === null) {
                 value = options.default;
             }
@@ -724,12 +723,6 @@ export class SettingsFrame {
     dispose() {
         for (let key in this.__Settings) {
             this.__Settings[key].dispose();
-        }
-    }
-
-    _callUpdateForAllSettings() {
-        for (let key in this.__Settings) {
-            this._onChange(key, this.__Settings[key].value);
         }
     }
 }

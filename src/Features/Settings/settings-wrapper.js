@@ -70,7 +70,6 @@ export function chooseProfile(profileID) {
                 listener("participant/"+path, value);
             }
         })
-        ParticipantSettings._callUpdateForAllSettings();
     }
 }
 

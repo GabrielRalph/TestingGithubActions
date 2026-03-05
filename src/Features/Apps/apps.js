@@ -10,8 +10,8 @@ const AppsList = [
   "https://starfin-adventure.squidly.com.au",
   "https://v3.squidly.com.au/AppsDev/Lamp",
   // "http://127.0.0.1:37374/AppsDev/Lamp", // Local development URL (served by VSCode Live Server)
-  // "http://127.0.0.1:5500",
-  // "http://127.0.0.1:5501",
+  "http://127.0.0.1:5500",
+  "http://127.0.0.1:5501",
 ];
 
 class QuizSearch extends SearchWindow {
@@ -178,11 +178,40 @@ export default class Apps extends Features {
     if (!this.appDescriptors || this.appDescriptors.length === 0) {
       await this.loadAppDescriptors();
     }
-    await Promise.all([
-      this.appFrame.show(),
-      this.appFrame.search.reset(true),
-      this.appFrame.search.show(),
-    ]);
+    await this.appFrame.show();
+
+    // Check Firebase for an already-selected app (handles late-join scenario)
+    const selectedApp = await this.sdata.get("selected_app");
+    if (selectedApp) {
+      // App is already selected — load it directly, skip search
+      this.appFrame.search.hide();
+      const app = this.appDescriptors?.find(
+        (a) => a.url === selectedApp.app?.url,
+      );
+      if (app) {
+        this._setApp(app.index);
+        this.currentAppIndex = app.index;
+      } else if (
+        selectedApp.index >= 0 &&
+        selectedApp.index < this.appDescriptors.length
+      ) {
+        this._setApp(selectedApp.index);
+        this.currentAppIndex = selectedApp.index;
+      } else {
+        await this.appFrame.setSrc("about:blank");
+        await Promise.all([
+          this.appFrame.search.reset(true),
+          this.appFrame.search.show(),
+        ]);
+      }
+    } else {
+      // No app selected — show search as normal
+      await this.appFrame.setSrc("about:blank");
+      await Promise.all([
+        this.appFrame.search.reset(true),
+        this.appFrame.search.show(),
+      ]);
+    }
   }
 
   async close() {
@@ -801,10 +830,13 @@ export default class Apps extends Features {
     let result = false;
     let apiURL = relURL("./app-base-api.js", import.meta);
     let accessButtonsURL = relURL(
-      "../../Utilities/Buttons/access-buttons.js", 
+      "../../Utilities/Buttons/access-buttons.js",
       import.meta,
     );
-    let gridIconStyles = relURL("../../Utilities/Buttons/grid-icon.css", import.meta)
+    let gridIconStyles = relURL(
+      "../../Utilities/Buttons/grid-icon.css",
+      import.meta,
+    );
     this.appDescriptors = await Promise.all(
       AppsList.map(async (url) => {
         try {

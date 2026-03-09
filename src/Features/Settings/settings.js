@@ -384,8 +384,6 @@ class SettingsWindow extends OccupiableWindow {
 }
 
 
-
-
 export default class SettingsFeature extends Features {
     constructor(session, sdata) {
         super(session, sdata);
@@ -600,6 +598,9 @@ export default class SettingsFeature extends Features {
 
     async initialise() {
        let hostUID = this.sdata.hostUID;
+       
+       // Wait for the profileID to be loaded from firebase, 
+       // then initialise the settings with that profileID
        let initS = false;
        let pid = await new Promise(r => {
             this.sdata.onValue("profileID", (profileID) => {
@@ -612,12 +613,13 @@ export default class SettingsFeature extends Features {
             });
         });
         await Settings.initialise(hostUID, pid);
-        
+
+        // Set the settings layout in the settings window        
         this.settingsWindow.settingsLayout = SettingsFeature.SettingsLayout;
 
-        // Whatch profiles if host.
+        // Watch profiles if host.
         if (this.sdata.me === "host") {
-            Settings.watchProfiles(hostUID, (profiles) => {
+            Settings.watchProfiles(hostUID, () => {
                 this.dispatchEvent( new Event("profiles-change"))
             });
         }
@@ -632,6 +634,7 @@ export default class SettingsFeature extends Features {
             this._openPath = path;
         });
 
+        // Listen to openPageOnBack changes
         this.sdata.onValue("openPageOnBack", (page) => {
             this._openPageOnBack = page;
         });
@@ -645,14 +648,15 @@ export default class SettingsFeature extends Features {
         });
 
 
-        // Set the current devices initially in firebase
-        this.sdata.set("devices/"+this.sdata.me, await getDevices(true));
-
         this.lastTheirDevices = {
             audioinput: {},
             audiooutput: {},
             videoinput: {},
         }
+        
+        // Set the current devices initially in firebase
+        this.sdata.set("devices/"+this.sdata.me, await getDevices(true));
+
         // Listen to the other users device changes in the firebase
         this.sdata.onValue("devices/"+this.sdata.them, (devices) => {
             if (devices === null) {

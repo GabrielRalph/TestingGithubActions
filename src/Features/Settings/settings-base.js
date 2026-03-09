@@ -2,26 +2,23 @@ import ImageAssets from "../../Utilities/ImageAssets/image-library.js";
 
 /** @typedef {import("../squidly-session.js").SessionDataFrame} SessionDataFrame */
 
-const MY_VOICES = {
-    margaret: true,
-    jane: true,
-    peter: true,
-    charles: true,
-    sarah: true,
-    lachlan: true,
-    jeffrey: true,
-    theo: true,
-    lucy: true,
-    holly: true,
-    default: true
-}
-
 const LANGUAGES = {
     english: {
         flag: "https://firebasestorage.googleapis.com/v0/b/eyesee-d0a42.appspot.com/o/icons%2Fall%2Fv9IAQ4u0oMQkqwLwBpfr?alt=media&token=e7a320a0-90d6-4a55-8b26-2aaba96e4242",
-        voices: {...MY_VOICES},
+        voices: {
+            margaret: true,
+            jane: true,
+            peter: true,
+            charles: true,
+            sarah: true,
+            lachlan: true,
+            jeffrey: true,
+            theo: true,
+            lucy: true,
+            holly: true,
+            default: true
+        },
     },
-    
     bengali: {
         flag: "https://firebasestorage.googleapis.com/v0/b/eyesee-d0a42.appspot.com/o/icons%2Fall%2F4XFjZmzE6VPkl3EEMHGK?alt=media&token=47322a32-8141-4829-9d0f-ff80aefd3250",
         voices: {
@@ -41,52 +38,6 @@ const LANGUAGES = {
             julia: true
         },
     },
-
-    // german:{
-    //     flag: "https://firebasestorage.googleapis.com/v0/b/eyesee-d0a42.appspot.com/o/icons%2Fall%2F26DRt7vVftf7T5D7GpEJ?alt=media&token=24709089-b738-440b-9577-f2882ad8a13c",
-    //     voices: {
-    //         hans: true,
-    //         marlene: true,
-    //         vicki: true,
-    //         default: true
-    //     },
-    // },
-    // italian:{
-    //     flag: "https://firebasestorage.googleapis.com/v0/b/eyesee-d0a42.appspot.com/o/icons%2Fall%2FA3hluY0c8Qeh4bhQL4DB?alt=media&token=64ed09f8-06a3-4615-81bc-ca47e21e844c",
-    //     voices: {
-    //         carlo: true,
-    //         francesca: true,
-    //         alice: true,
-    //         default: true
-    //     }
-    // },
-    // spanish:{
-    //     flag: "https://firebasestorage.googleapis.com/v0/b/eyesee-d0a42.appspot.com/o/images%2Fspain.svg?alt=media&token=e4d869d4-2e8c-4067-a3e4-69dc4fb0c61a",
-    //     voices: {
-    //         jorge: true,
-    //         conchita: true,
-    //         enrique: true,
-    //         default: true
-    //     }
-    // },
-    // mandarin:{
-    //     flag: "https://firebasestorage.googleapis.com/v0/b/eyesee-d0a42.appspot.com/o/icons%2Fall%2FpXhLyYqu5BqGJaSHsj4q?alt=media&token=8fd2f8fd-02c7-4097-8c66-466c62336a92",
-    //     voices: {
-    //         liu: true,
-    //         xiaoxiao: true,
-    //         yunjian: true,
-    //         default: true
-    //     }
-    // },
-    // japanese:{
-    //     flag: "https://firebasestorage.googleapis.com/v0/b/eyesee-d0a42.appspot.com/o/icons%2Fall%2FLfdtpK9UBjP1pFgi4NiM?alt=media&token=36aecef7-c043-4ea7-b822-8204d1a77890",
-    //     voices: {
-    //         takumi: true,
-    //         haruka: true,
-    //         kyoko: true,
-    //         default: true
-    //     }
-    // },
     korean:{
         flag: "https://firebasestorage.googleapis.com/v0/b/eyesee-d0a42.appspot.com/o/icons%2Fall%2FPdXOuSWnLc1C9mIDyNcZ?alt=media&token=e0869cf1-f1aa-4fab-acf4-ef2cd9772e58",
         voices: {
@@ -657,6 +608,11 @@ export class SettingsFrame {
     addChangeListener(listener) {
         if (listener instanceof Function) {
             this.__SettingsChangeListeners.add(listener);
+
+            for (let settingName in this.__Settings) {
+                listener(settingName, this.__Settings[settingName].value);
+            }
+
             return () => {
                 this.__SettingsChangeListeners.delete(listener);
             }
@@ -716,7 +672,6 @@ export class SettingsFrame {
         }
         return icon;
     }
-
 
     resetAllToDefault() {
         this.dataFrame.set(null, true)

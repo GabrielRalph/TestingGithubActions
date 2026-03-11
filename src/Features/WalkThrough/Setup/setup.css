@@ -1,426 +1,484 @@
-/* ============================================ */
-/* SETUP WINDOW STYLES */
-/* ============================================ */
 
-setup-window {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #000000;
-    width: 100%;
-    height: 100%;
+
+.page-root {
     position: fixed;
     top: 0;
     left: 0;
-    font-family: inherit;
-}
-
-.setup-container {
-    max-width: 900px;
     width: 100%;
-    padding: 60px 80px;
-    color: white;
-    text-align: center;
-    font-family: inherit;
-    margin: 0;
-}
-
-.setup-header {
-    margin-bottom: 50px;
-}
-h1 {
-    text-align: center;
-    font-size: xxx-large;
-}
-
-.mask-overlay.setup-mode path {
-    fill: #0064b4cc;
-}
-.setup-header h1 {
-    font-size: 48px;
-    font-weight: 400;
-    margin: 0 0 15px 0;
-    color: white;
-    font-family: inherit;
-}
-
-.setup-header p {
-    font-size: 20px;
-    margin: 0;
-    color: rgba(255, 255, 255, 0.8);
-    font-weight: 400;
-    font-family: inherit;
-}
-
-/* ============================================ */
-/* EXISTING PROFILES SECTION */
-/* ============================================ */
-
-.existing-profiles-section {
-    margin-bottom: 60px;
-}
-
-.existing-profiles-section h2 {
-    font-size: 16px;
-    font-weight: 400;
-    letter-spacing: 1.5px;
-    margin: 0 0 30px 0;
-    color: white;
-    text-align: left;
-    font-family: inherit;
-}
-
-.profiles-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 30px;
-    margin-bottom: 20px;
-}
-
-/* When there's only one profile, constrain it similar to GridLayout */
-.profiles-grid:has(.profile-card:only-child) {
-    grid-template-columns: 1fr;
-    max-width: 250px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-/* ============================================ */
-/* PROFILE CARDS */
-/* ============================================ */
-
-.profile-card,
-profile-card {
-    --profile-color: #9b59b6;
-    --profile-color-hover: #8e44ad;
-    --profile-shadow: rgba(155, 89, 182, 0.4);
-    
-    background: linear-gradient(135deg, var(--profile-color) 0%, var(--profile-color-hover) 100%);
-    border: none;
-    border-radius: 20px;
-    padding: 40px 20px;
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 15px;
-    min-height: 160px;
-    width: 100%;
-    font-family: inherit;
-}
-
-.profile-card:hover,
-.profile-card[hover],
-profile-card:hover,
-profile-card[hover] {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 30px var(--profile-shadow);
-}
-
-.profile-card:active,
-profile-card:active {
-    transform: translateY(-2px);
-}
-
-.profile-icon {
-    width: 80px;
-    height: 80px;
-    background: rgba(255, 255, 255, 0.25);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.profile-icon svg {
-    width: 45px;
-    height: 45px;
-    color: white;
-}
-
-.profile-name {
-    font-size: 24px;
-    font-weight: 400;
-    color: white;
-    font-family: inherit;
-    text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.3);
-    line-height: 1.2;
-}
-
-/* ============================================ */
-/* NEW PROFILE SECTION */
-/* ============================================ */
-
-.new-profile-section {
-    text-align: left;
-    max-width: 600px;
-    margin: 0 auto;
-}
-
-.new-profile-section h2 {
-    font-size: 24px;
-    font-weight: 400;
-    margin: 0 0 25px 0;
-    color: white;
-    font-family: inherit;
-}
-
-.input-label {
-    display: block;
-    font-size: 16px;
-    font-weight: 400;
-    margin-bottom: 10px;
-    color: white;
-    font-family: inherit;
-}
-
-.profile-input {
-    width: 100%;
-    padding: 15px 20px;
-    font-size: 18px;
-    border: none;
-    border-radius: 8px;
-    margin-bottom: 25px;
-    background: white;
-    color: #333;
-    box-sizing: border-box;
-    font-family: inherit;
-}
-
-.profile-input::placeholder {
-    color: #999;
-    font-family: inherit;
-}
-
-.profile-input:focus {
-    outline: 2px solid #9b59b6;
-    outline-offset: 2px;
-}
-
-/* ============================================ */
-/* CONTINUE BUTTONS */
-/* ============================================ */
-
-.continue-btn,
-grid-icon.continue-btn {
-    display: block;
-    margin: 0 auto;
-    padding: 15px 60px;
-    font-size: 18px;
-    font-weight: 400;
-    background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-    font-family: inherit;
-}
-
-.continue-btn:hover,
-grid-icon.continue-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 20px rgba(155, 89, 182, 0.4);
-}
-
-.continue-btn:active,
-grid-icon.continue-btn:active {
-    transform: translateY(0);
-}
-
-.continue-btn[disabled],
-grid-icon.continue-btn[disabled] {
-    opacity: 0.5;
-    cursor: not-allowed;
+    height: 100%;
+    z-index: 999999;
     pointer-events: none;
 }
 
-.continue-btn-white,
-grid-icon.continue-btn-white {
+
+
+.profile-selection-root {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 76.5%;
+    height: 100%;
+    z-index: 999999;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow-y: auto;
+    padding: 60px 80px;
+    box-sizing: border-box;
+    color: white;
+}
+
+
+.access-method-root {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 76.5%;
+    height: 100%;
+    z-index: 999999;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 80px;
+    box-sizing: border-box;
+    color: white;
+}
+
+
+.continue-btn {
     display: block;
-    margin: 50px auto 0;
-    padding: 18px 80px;
-    font-size: 24px;
-    font-weight: 700;
+    margin: 0 auto;
+    padding: 20px 120px;
+    font-size: 32px;
+    font-weight: 600;
     background: white;
-    color: #000;
+    color: black;
     border: none;
     border-radius: 12px;
-    cursor: pointer;
-    transition: all 0.3s;
-    font-family: inherit;
-}
-
-.continue-btn-white:hover,
-grid-icon.continue-btn-white:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 20px rgba(255, 255, 255, 0.3);
-}
-
-.continue-btn-white[disabled],
-grid-icon.continue-btn-white[disabled] {
-    background: #666;
-    color: #333;
     cursor: not-allowed;
-    pointer-events: none;
+    transition: opacity 0.2s ease;
     opacity: 0.5;
+    pointer-events: all;
+    text-align: center;
+    position: relative;
+    top: 210px;
 }
 
-/* ============================================ */
-/* BACK BUTTON */
-/* ============================================ */
 
-.back-btn {
-    display: inline-block;
-    margin-top: 30px;
-    padding: 12px 30px;
-    font-size: 16px;
-    font-weight: 400;
-    background: transparent;
-    color: white;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-family: inherit;
-}
-
-.back-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.5);
-}
-
-/* ============================================ */
-/* ACCESS METHODS SECTION */
-/* ============================================ */
 
 .access-methods-grid {
+    width: 100%;
+    height: 40%;
+    position: relative;
+    top: 90px;
+    pointer-events: all;
+}
+
+
+.card-icon.selected .tab {
+    fill: #0096c7;
+}
+.card-icon.selected .card {
+    fill: #00b4d8;
+}
+access-method-card {
+    display: block;
+    width: 200px;
+    height: 200px;
+}
+
+.card-icon.selected .tab {
+    fill: #0096c7;
+}
+access-button.profile-card[selected] {
+    --main-color: #00b4d8 !important;
+    --tab-color: #0096c7 !important;
+    --outline-color: white !important;
+}
+
+.continue-btn:hover {
+    opacity: 0.85;
+    cursor: pointer;
+}
+.exit-btn {
+    position: fixed;
+    top: 40px;
+    left: calc(76.5% - 120px);
+    width: 100px;
+    height: 100px;
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid white;
+    border-radius: 50%;
+    color: white;
+    font-size: 32px;
+    font-weight: bold;
+    cursor: pointer;
     display: flex;
-    gap: 50px;
-    margin: 60px auto;
-    max-width: 1300px;
     align-items: center;
     justify-content: center;
-    flex-wrap: nowrap;
+    transition: all 0.2s ease;
+    padding: 0;
+    z-index: 1000003;
+    pointer-events: all;
 }
 
-/* When there's only one card, constrain its width */
-.access-methods-grid:has(.access-method-card:only-child) {
-    max-width: 380px;
+.exit-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
 }
 
-/* When there are only two cards, constrain the grid width */
-.access-methods-grid:has(.access-method-card:nth-child(2):last-child) {
-    max-width: 810px;
+
+
+.profile-selection-root h1,
+.access-method-root h1 {
+    font-size: 56px;
+    font-weight: 700;
+    margin: 0 0 20px 0;
+    color: white;
+    text-align: center;
 }
 
-/* ============================================ */
-/* ACCESS METHOD CARDS */
-/* ============================================ */
+.profile-selection-root h2 {
+    font-size: 40px;
+    font-weight: 700;
+    margin: 0 0 30px 0;
+    color: white;
+}
 
-.access-method-card,
-access-method-card,
-grid-icon.access-method-card {
-    --card-color: #F4E07A;
-    --card-color-hover: #f5e89d;
-    --card-shadow: rgba(255, 255, 255, 0.2);
-    
-    background: var(--card-color);
+
+.profile-selection-root .subtitle {
+    width: 80%;
+    margin: 0 auto 50px auto;
+    font-size: 28px;
+    color: rgba(255, 255, 255, 0.85);
+    text-align: center;
+    line-height: 1.5;
+}
+
+
+.profiles-grid {
+    display: flex;
+    flex-direction: row;
+    gap: 40px;
+    margin: 0 0 50px 0;
+    pointer-events: all;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 16px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.4) transparent;
+}
+
+
+
+profile-card {
+    flex: 0 0 calc((100% - 80px) / 3);
+    min-width: calc((100% - 80px) / 3);
+    display: block;
+}
+
+
+
+
+.profile-selection-root input {
+    width: 100%;
+    padding: 18px;
+    font-size: 24px;
+    border-radius: 8px;
     border: none;
-    border-radius: 24px;
-    padding: 60px 40px;
+    margin-bottom: 30px;
+    box-sizing: border-box;
+    pointer-events: all;
+}
+
+
+
+.profile-selection-root .continue-btn {
+    display: block;
+    margin: 0 auto;
+    padding: 25px 40px;
+    font-size: 40px;
+    background: #9b59b6;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    opacity: 0.5;
     cursor: pointer;
-    transition: all 0.3s;
+    width: 180px;
+    text-align: center;
+    pointer-events: all;
+    transition: opacity 0.2s ease;
+}
+
+.profile-selection-root .continue-btn:not([disabled]) {
+    opacity: 1;
+}
+
+
+.access-methods-container {
+    position: relative;
+    top: 90px;
+    display: flex;
+    justify-content: center;
+    gap: 60px;
+    margin-bottom: 80px;
+    pointer-events: all;
+}
+
+
+
+.access-method-label {
+    font-size: 32px;
+    font-weight: 600;
+    color: white;
+    margin-top: 10px;
+}
+
+.access-method-root .continue-btn {
+    display: block;
+    margin: 0 auto;
+    padding: 20px 120px;
+    font-size: 32px;
+    font-weight: 600;
+    background: white;
+    color: black;
+    border: none;
+    border-radius: 12px;
+    cursor: not-allowed;
+    transition: opacity 0.2s ease;
+    opacity: 0.5;
+    pointer-events: all;
+    text-align: center;
+}
+
+.access-method-root .continue-btn:not([disabled]) {
+    opacity: 1;
+    cursor: pointer;
+}
+
+
+
+.header {
+    position: relative;
+    top:30px;
+   
+    font-size: 56px;
+    font-weight: 700;
+    margin: 0 0 20px 0;
+    color: white;
+    text-align: center;
+}
+
+.title {
+    width: 80%;
+    margin: 0 auto 50px auto;
+    font-size: 28px;
+    color: rgba(255,255,255,0.85);
+    text-align: center;
+    line-height: 1.5;
+    position: relative;
+    top: 60px;
+}
+
+.existing-profiles-title {
+    position: relative; 
+    top: 80px;
+    font-size: 40px;
+    font-weight: 700;
+    margin: 0 0 30px 0;
+    color: white;
+}
+
+
+.create-profile {
+    position: relative;
+    font-size: 40px;
+    font-weight: 700;
+    margin: 0 0 20px 0;
+    color: white;
+    top: 150px;
+}
+
+.name-input {
+    position: relative;
+    top: 180px;
+    width: 100%;
+    padding: 18px;
+    font-size: 24px;
+    border-radius: 8px;
+    border: none;
+    margin-bottom: 30px;
+    box-sizing: border-box;
+    pointer-events: all;
+}
+
+.header-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 76.5%;
+    height: 100%;
+    z-index: 999999;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+   
+    overflow-y: auto;
+    padding: 60px 80px;
+    box-sizing: border-box;
+    color: white;
+}
+
+.exit-btn {
+    position: fixed;
+    top: 40px;
+    left: calc(76.5% - 120px);
+    width: 100px;
+    height: 100px;
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid white;
+    border-radius: 50%;
+    color: white;
+    font-size: 32px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    padding: 0;
+    z-index: 1000003;
+    pointer-events: all;
+}
+
+.exit-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+
+.exit-btn:active {
+    transform: scale(0.95);
+}
+
+
+.access-btn {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 30px;
-    height: 380px;
-    width: 380px;
-    position: relative;
-    flex-shrink: 0;
-    font-family: inherit;
+    justify-content: flex-start;
+    cursor: pointer;
+    border: none;
+    border-radius: 16px;
+    padding: 12px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.access-method-card:hover,
-.access-method-card[hover],
-access-method-card:hover,
-access-method-card[hover],
-grid-icon.access-method-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 30px var(--card-shadow);
-}
-
-/* Different color themes for access methods */
-.access-method-card[data-method="eye-gaze"],
-access-method-card[data-method="eye-gaze"] {
-    --card-color: #F4E07A;
-    --card-shadow: rgba(244, 224, 122, 0.4);
-}
-
-.access-method-card[data-method="eye-gaze"] .access-icon,
-.access-method-card[data-method="eye-gaze"] .access-name,
-access-method-card[data-method="eye-gaze"] .access-icon,
-access-method-card[data-method="eye-gaze"] .access-name {
-    color: white;
-}
-
-.access-method-card[data-method="switch"],
-access-method-card[data-method="switch"] {
-    --card-color: #C62828;
-    --card-shadow: rgba(198, 40, 40, 0.4);
-}
-
-.access-method-card[data-method="switch"] .access-icon,
-.access-method-card[data-method="switch"] .access-name,
-access-method-card[data-method="switch"] .access-icon,
-access-method-card[data-method="switch"] .access-name {
-    color: white;
-}
-
-.access-method-card[data-method="cursor"],
-access-method-card[data-method="cursor"] {
-    --card-color: #81D4FA;
-    --card-shadow: rgba(129, 212, 250, 0.4);
-}
-
-.access-method-card[data-method="cursor"] .access-icon,
-.access-method-card[data-method="cursor"] .access-name,
-access-method-card[data-method="cursor"] .access-icon,
-access-method-card[data-method="cursor"] .access-name {
-    color: white;
-}
-
-.access-icon {
-    width: 120px;
-    height: 120px;
+/* Icon container */
+.access-btn .access-icon-box {
+    width: 240px;
+    height: 240px;
+    border-radius: 12px;
     display: flex;
-    align-items: center;
     justify-content: center;
-    flex-shrink: 0;
+    align-items: center;
+    margin-bottom: 12px;
+    background: var(--icon-bg, #999);
+    transition: all 0.2s ease;
 }
 
-.access-icon svg {
-    width: 100px;
-    height: 100px;
+
+.access-icon-box i {
+    font-size: 80px; 
+    color: white;
 }
 
-.access-name {
-    font-size: 32px;
-    font-weight: 400;
+
+.access-method-label {
     text-align: center;
-    font-family: inherit;
-    text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.3);
-    line-height: 1.2;
+    font-size: 36px;
+    color: white;
+    margin-top: 8px;
 }
 
-/* ============================================ */
-/* CONTENT SECTION */
-/* ============================================ */
 
-.content-section {
+.access-btn.eye-gaze { --icon-bg: #F4E5A5; }
+.access-btn.switch-method { --icon-bg: #C41E3A; }
+.access-btn.cursor-method { --icon-bg: #87CEEB; }
+
+
+.access-btn:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+
+.access-btn:hover .access-icon-box {
+    filter: brightness(1.1);
+}
+
+
+.access-btn.selected {
+    border: 4px solid white;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3), 0 0 0 8px rgba(255,255,255,0.3);
+}
+.card-icon.selected .tab {
+    fill: #7c3aed;
+}
+
+.card-icon.selected .card {
+    fill: #9b59b6;
+}
+
+.card-icon.selected .outline {
+    stroke: white;
+}
+.access-method-title {
+    font-size: 56px;
+    font-weight: 700;
+    margin-bottom: 80px;
+    color: white;
     text-align: center;
-    margin: 40px 0;
+}
+
+.profiles-grid-wrapper {
+    display: flex;
+    position: relative;
+    top: 110px;
+    flex-direction: row;
+    width: 100%;
+    height: 30%;
+    pointer-events: all;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 16px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.4) transparent;
+    
+}
+.access-methods-grid grid-layout {
+
+    width: 100%;
+    height: 100%;
+    min-width: max-content;
+}
+
+.profiles-grid-wrapper grid-layout {
+    width: 100%;
+    height: 100%;
+    min-width: max-content;
+}
+.profiles-grid-wrapper::-webkit-scrollbar {
+    height: 4px;
+}
+
+.profiles-grid-wrapper::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.profiles-grid-wrapper::-webkit-scrollbar-thumb {
+    background-color: rgba(255,255,255,0.3);
+    border-radius: 2px;
 }

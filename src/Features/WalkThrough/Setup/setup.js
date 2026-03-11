@@ -6,19 +6,27 @@ import { GridIcon } from "../../../Utilities/Buttons/grid-icon.js";
 
 
 class SetUpWindow extends OccupiableWindow {
-   constructor() {
-       super("setup-window");
+   constructor(feature) {
+        super("setup-window");
+        this.feature = feature;
+        this._profilePage = null;
+        this._accessPage = null;
+        this._pageRoot = null;
+        this._unwatchProfiles = null;
 
-
-       this.root.events = {
-           "setup-click": (e) => this.onSetupClick(e),
-       };
-   }
+        const href = relURL("./Setup/setup.css", import.meta);
+        if (!document.querySelector(`link[href="${href}"]`)) {
+            const link = document.createElement("link");
+            link.rel = "stylesheet";
+            link.href = href;
+            document.head.appendChild(link);
+        }
+    }
 
 
    async onSetupClick(e) {
        console.log(`Profile selected: ${e.profile || "unknown"}`);
-       // Handle profile selection here
+
    }
 
 
@@ -48,15 +56,13 @@ export default class SetupFeature extends Features {
        super(session, sdata);
 
 
-       // Store session reference for later use
+      
        this._session = session;
 
 
-       // Setup window
        this.setupWindow = new SetUpWindow();
 
 
-       // Only add menu item and setup functionality for host
        if (this.sdata.me === "host") {
            this.session.toolBar.addMenuItem([], {
                name: "setup",
@@ -90,7 +96,7 @@ export default class SetupFeature extends Features {
 
 
    async openWindow() {
-       // Double-check host status before opening
+
        if (this.sdata.me !== "host") {
            console.warn("Setup window is only available to the host");
            return;
@@ -131,14 +137,13 @@ export default class SetupFeature extends Features {
            profiles = Settings.getProfiles();
            console.log("Retrieved profiles from database:", profiles);
           
-           // Convert to the same format as before (name and icon only)
            profiles = profiles.map(profile => ({
                name: profile.name,
-               icon: "👤" // Keep the same icon as before
+               icon: "👤" 
            }));
        } catch (error) {
            console.warn("Could not load profiles from database, using defaults:", error);
-           // Fallback to original default profiles if import fails
+           
            profiles = [
                { name: "Alex", icon: "👤" },
                { name: "Jordan", icon: "👤" },
@@ -150,12 +155,11 @@ export default class SetupFeature extends Features {
        this.setupWindow.root.innerHTML = "";
 
 
-       // Container
        const container = document.createElement("div");
        container.className = "setup-container";
 
 
-       // Header
+
        const header = document.createElement("div");
        header.className = "setup-header";
       
@@ -169,8 +173,6 @@ export default class SetupFeature extends Features {
        header.appendChild(subtitle);
        container.appendChild(header);
 
-
-       // Existing Profiles Section
        const existingSection = document.createElement("div");
        existingSection.className = "existing-profiles-section";
       
@@ -187,7 +189,7 @@ export default class SetupFeature extends Features {
            const profileCard = document.createElement("button");
            profileCard.className = "profile-card";
           
-           // Add inline styles to ensure it's clickable
+           
            Object.assign(profileCard.style, {
                pointerEvents: 'auto',
                cursor: 'pointer',
@@ -200,35 +202,35 @@ export default class SetupFeature extends Features {
                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                <circle cx="12" cy="7" r="4"></circle>
            </svg>`;
-           iconDiv.style.pointerEvents = 'none'; // Prevent icon from blocking clicks
+           iconDiv.style.pointerEvents = 'none'; 
           
            const nameDiv = document.createElement("div");
            nameDiv.className = "profile-name";
            nameDiv.textContent = profile.name;
-           nameDiv.style.pointerEvents = 'none'; // Prevent text from blocking clicks
+           nameDiv.style.pointerEvents = 'none';
           
            profileCard.appendChild(iconDiv);
            profileCard.appendChild(nameDiv);
           
-           // Click to select (not navigate)
+
            profileCard.onclick = () => {
                console.log("Profile selected:", profile.name);
               
-               // Deselect all other profile cards
+
                profilesGrid.querySelectorAll('.profile-card').forEach(card => {
                    card.style.border = '';
                    card.style.boxShadow = '';
                    card.style.transform = '';
                });
               
-               // Select this card
+
                profileCard.style.border = '4px solid #9b59b6';
                profileCard.style.boxShadow = '0 0 20px rgba(155, 89, 182, 0.5)';
                profileCard.style.transform = 'scale(1.05)';
               
                selectedProfile = profile.name;
               
-               // Enable the continue button
+
                existingContinueBtn.disabled = false;
                Object.assign(existingContinueBtn.style, {
                    background: 'linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%)',
@@ -246,7 +248,7 @@ export default class SetupFeature extends Features {
        container.appendChild(existingSection);
 
 
-       // Create New Profile Section
+
        const newProfileSection = document.createElement("div");
        newProfileSection.className = "new-profile-section";
       
@@ -266,7 +268,7 @@ export default class SetupFeature extends Features {
        input.className = "profile-input";
        input.placeholder = "Enter your name";
       
-       // Add inline styles to ensure input is editable
+
        Object.assign(input.style, {
            pointerEvents: 'auto',
            userSelect: 'text',
@@ -282,7 +284,7 @@ export default class SetupFeature extends Features {
        continueBtn.className = "continue-btn";
        continueBtn.textContent = "Continue";
       
-       // Add inline styles to ensure button is visible and clickable
+
        Object.assign(continueBtn.style, {
            display: 'block',
            margin: '0 auto',
@@ -306,11 +308,11 @@ export default class SetupFeature extends Features {
                return;
            }
            console.log("New profile - Continue clicked with name:", name);
-           // Go to next page
+
            this.showNextPage(name);
        };
       
-       // Add hover effect
+
        continueBtn.onmouseenter = () => {
            continueBtn.style.transform = 'translateY(-2px)';
            continueBtn.style.boxShadow = '0 5px 20px rgba(155, 89, 182, 0.4)';
@@ -333,12 +335,11 @@ showNextPage(profileName) {
    this.setupWindow.root.innerHTML = "";
 
 
-   // Container
+
    const container = document.createElement("div");
    container.className = "setup-container";
 
 
-   // Header
    const header = document.createElement("div");
    header.className = "setup-header";
   
@@ -349,7 +350,7 @@ showNextPage(profileName) {
    container.appendChild(header);
 
 
-   // Access Methods Grid
+
    const accessGrid = document.createElement("div");
    accessGrid.className = "access-methods-grid";
 
@@ -384,7 +385,7 @@ showNextPage(profileName) {
    ];
 
 
-   // Continue button (created first so we can reference it)
+
    const continueBtn = document.createElement("button");
    continueBtn.className = "continue-btn-white";
    continueBtn.textContent = "Continue";
@@ -406,12 +407,12 @@ showNextPage(profileName) {
        zIndex: '10'
    });
   
-   // Function to update continue button state
+
    const updateContinueButton = () => {
        const selectedCount = Array.from(accessGrid.querySelectorAll('[data-selected="true"]')).length;
       
        if (selectedCount > 0) {
-           // Enable button
+
            Object.assign(continueBtn.style, {
                background: 'white',
                color: '#000',
@@ -420,7 +421,7 @@ showNextPage(profileName) {
                opacity: '1'
            });
        } else {
-           // Disable button
+
            Object.assign(continueBtn.style, {
                background: '#666',
                color: '#333',
@@ -437,7 +438,7 @@ showNextPage(profileName) {
        methodCard.className = "access-method-card";
        methodCard.setAttribute('data-selected', 'false');
       
-       // Apply background color and ensure it's clickable
+
        Object.assign(methodCard.style, {
            background: method.color,
            pointerEvents: 'auto',
@@ -449,13 +450,13 @@ showNextPage(profileName) {
        iconDiv.className = "access-icon";
        iconDiv.innerHTML = method.icon;
        iconDiv.style.color = method.color === "#F4E07A" ? "#6B5B00" : (method.color === "#C62828" ? "#2A2A2A" : "#0277BD");
-       iconDiv.style.pointerEvents = 'none'; // Prevent icon from blocking clicks
+       iconDiv.style.pointerEvents = 'none'; 
       
        const nameDiv = document.createElement("div");
        nameDiv.className = "access-name";
        nameDiv.textContent = method.name;
        nameDiv.style.color = method.color === "#F4E07A" ? "#6B5B00" : (method.color === "#C62828" ? "white" : "#0277BD");
-       nameDiv.style.pointerEvents = 'none'; // Prevent text from blocking clicks
+       nameDiv.style.pointerEvents = 'none'; 
       
        methodCard.appendChild(iconDiv);
        methodCard.appendChild(nameDiv);
@@ -464,7 +465,7 @@ showNextPage(profileName) {
            e.stopPropagation();
            console.log(`Card clicked: ${method.name}`);
           
-           // Toggle selection
+
            const isSelected = methodCard.getAttribute('data-selected') === 'true';
            methodCard.setAttribute('data-selected', (!isSelected).toString());
           
@@ -478,7 +479,7 @@ showNextPage(profileName) {
           
            console.log(`${method.name} ${!isSelected ? 'selected' : 'deselected'}`);
           
-           // Update continue button state
+
            updateContinueButton();
        };
       
@@ -488,7 +489,7 @@ showNextPage(profileName) {
 
    container.appendChild(accessGrid);
   
-   // Store reference to 'this' for use in onclick handler
+
    const self = this;
   
 
@@ -509,8 +510,7 @@ showNextPage(profileName) {
            await self.closeWindow();
           
            try {
-               // Store the selected profile and methods in Firebase
-               // Note: Only storing if we have permission, not critical for walkthrough
+              
                try {
                    self.sdata.set("selectedProfile", {
                        name: profileName,
@@ -518,15 +518,15 @@ showNextPage(profileName) {
                    });
                } catch (permError) {
                    console.warn("Could not save profile to Firebase (permission issue):", permError);
-                   // Continue anyway - this is not critical
+          
                }
               
-               // Trigger walkthrough start for all users via Firebase
+            
                console.log("Triggering walkthrough via Firebase...");
                console.log("Session object:", self.session);
                console.log("Session._session:", self._session);
               
-               // Use the stored session reference
+            
                const session = self._session || self.session;
               
                if (!session) {
@@ -575,12 +575,11 @@ showNextPage(profileName) {
 
 
    async initialise() {
-       // This method is called during feature initialization
+       
    }
 
 
    static async loadResources() {
-       // This is the key method that loads the stylesheets
        SetUpWindow.loadStyleSheets();
    }
 

@@ -109,6 +109,7 @@ class InstructionModal extends HideShowTransition {
             type: "action",
             symbol: "next",
             displayValue: "Next",
+            class: "next-btn",
             events: {
                 "access-click": (e) => {
                     e.stopPropagation();
@@ -117,8 +118,11 @@ class InstructionModal extends HideShowTransition {
             }
         }), 0, 1);
 
-        this.prevButton.style.pointerEvents = 'auto';
-        this.nextButton.style.pointerEvents = 'auto';
+
+        
+
+        this.prevButton.styles.pointerEvents = 'auto';
+        this.nextButton.styles.pointerEvents = 'auto';
         this.closeButton.style.pointerEvents = 'auto';
         this.modal.style.pointerEvents = 'auto';
     }
@@ -190,20 +194,7 @@ class DwellTestModal extends HideShowTransition {
         super("dwell-test-modal");
 
         this.modal = this.createChild("div", { class: "dwell-modal-container" });
-        this.modal.style.cssText = `
-            width: 330px;
-            height: 700px;
-            background: linear-gradient(135deg, rgb(0, 180, 216) 0%, rgb(0, 150, 199) 100%);
-            border-radius: 12px;
-            padding: 30px;
-            color: white;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-            font-family: system-ui, -apple-system, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            box-sizing: border-box;
-        `;
+        
 
         const heading = this.modal.createChild("h2");
         heading.textContent = "Test the speed";
@@ -270,7 +261,7 @@ class WalkThroughOverlayElement extends SquidlyFeatureWindow {
 }
 
 /**
- * Manages the walkthrough state and step transitions with full synchronization
+ * Manages the walkthrough state and step transitions with full synchronisation
  */
 class WalkthroughController {
     constructor(session, overlay, sdata) {
@@ -319,7 +310,6 @@ class WalkthroughController {
 
         this._stateUpdateDebounce = setTimeout(() => {
             if (!this._isUpdatingFromRemote) {
-                console.log("Pushing state update to Firebase:", newState);
                 this.sdata.set("state", newState);
             }
         }, 50);
@@ -499,7 +489,7 @@ class WalkthroughController {
         finalState.maskShown = this.overlay.mask.shown;
         this._debounceStateUpdate(finalState);
 
-        console.log("=== Step", stepId, "complete ===\n");
+       
     }
 
     async next() {
@@ -919,11 +909,11 @@ export default class WalkThroughFeature extends Features {
                 <p><b>x</b> — Start Switch Access</p>
                 <p>You can use these shortcuts anytime.</p>
             `,
-            position: 'right',
-            area: ctrl.getArea(3, 4, 0, 1, 3, 2),
-            nextStepId: 'keyboard-setup-2',
+            position: 'center',
+            area: ctrl.getArea(3, 4, 0, 0, 0, 0),
+            nextStepId: 'walkthrough-complete',
             prevStepId: 'dwell-time-setup',
-            settingsPath: 'home/participant/keyboardShortcuts',
+            settingsPath: 'home/participant/access',
             onEnter: async (controller) => {
             },
             onExit: async (controller) => {
@@ -933,50 +923,6 @@ export default class WalkThroughFeature extends Features {
             }
         });
 
-        ctrl.registerStep({
-            id: 'keyboard-setup-2',
-            title: 'Keyboard <br> Shortcuts',
-            subtitle: 'Step 2 of 3',
-            content: `
-                <p><b>s</b> — Open Settings</p>
-                <p><b>g</b> — Open AAC Grid</p>
-                <p><b>x</b> — Start Switch Access</p>
-                <p>You can use these shortcuts anytime.</p>
-            `,
-            position: 'left',
-            area: ctrl.getArea(3, 4, 0, 2, 3, 3),
-            nextStepId: 'keyboard-setup-3',
-            prevStepId: 'dwell-time-setup',
-            settingsPath: 'home/participant/keyboardShortcuts',
-            onEnter: async (controller) => {
-            },
-            onExit: async (controller) => {
-                if (controller.overlay.dwellTestModal.shown) {
-                    await controller.overlay.dwellTestModal.hide();
-                }
-            }
-        });
-         ctrl.registerStep({
-            id: 'keyboard-setup-3',
-            title: 'Keyboard <br> Shortcuts',
-            subtitle: 'Step 3 of 3',
-            content: `
-                <p><b>s</b> — Open Settings</p>
-                <p><b>g</b> — Open AAC Grid</p>
-                <p><b>x</b> — Start Switch Access</p>
-                <p>You can use these shortcuts anytime.</p>
-            `,
-            position: 'center',
-            area: ctrl.getArea(3, 4, 0, 3, 3, 4),
-            nextStepId: 'walkthrough-complete',
-            prevStepId: 'keyboard-setup-2',
-            settingsPath: 'home/participant/keyboardShortcuts',
-            onEnter: async (controller) => {
-            },
-            onExit: async (controller) => {
-                
-            }
-        });
 
         ctrl.registerStep({
             id: 'walkthrough-complete',
@@ -988,7 +934,7 @@ export default class WalkThroughFeature extends Features {
             position: 'center',
             area: ctrl.getArea(3, 4, 0, 0, 0, 0),
             nextStepId: null,
-            prevStepId: 'keyboard-setup-3',
+            prevStepId: 'keyboard-setup-1',
             onEnter: async (controller) => {
                 const modal = document.querySelector('.walkthrough-modal');
                 if (modal) {
@@ -1019,7 +965,7 @@ export default class WalkThroughFeature extends Features {
             area: ctrl.getArea(3, 4, 0, 1, 3, 2),
             settingsPath: 'home/participant/access',
             window: 'settings',
-            nextStepId: 'keyboard-1',
+            nextStepId: 'switch-complete',
             prevStepId: null,
 
             onEnter: async (controller) => {
@@ -1075,76 +1021,8 @@ export default class WalkThroughFeature extends Features {
                 }
             }
         });
-        ctrl.registerStep({
-            id: 'keyboard-1',
-            title: 'Keyboard <br> Shortcuts',
-            subtitle: 'Step 1 of 3',
-            content: `
-                <p><b>s</b> — Open Settings</p>
-                <p><b>g</b> — Open AAC Grid</p>
-                <p><b>x</b> — Start Switch Access</p>
-                <p>You can use these shortcuts anytime.</p>
-            `,
-            position: 'right',
-            area: ctrl.getArea(3, 4, 0, 1, 3, 2),
-            nextStepId: 'keyboard-2',
-            prevStepId: 'switch-setup',
-            settingsPath: 'home/participant/keyboardShortcuts',
-            onEnter: async (controller) => {
-            },
-            onExit: async (controller) => {
-                if (controller.overlay.dwellTestModal.shown) {
-                    await controller.overlay.dwellTestModal.hide();
-                }
-            }
-        });
+        
 
-        ctrl.registerStep({
-            id: 'keyboard-2',
-            title: 'Keyboard <br> Shortcuts',
-            subtitle: 'Step 2 of 3',
-            content: `
-                <p><b>s</b> — Open Settings</p>
-                <p><b>g</b> — Open AAC Grid</p>
-                <p><b>x</b> — Start Switch Access</p>
-                <p>You can use these shortcuts anytime.</p>
-            `,
-            position: 'left',
-            area: ctrl.getArea(3, 4, 0, 2, 3, 3),
-            nextStepId: 'keyboard-3',
-            prevStepId: 'keyboard-2',
-            settingsPath: 'home/participant/keyboardShortcuts',
-            onEnter: async (controller) => {
-            },
-            onExit: async (controller) => {
-                if (controller.overlay.dwellTestModal.shown) {
-                    await controller.overlay.dwellTestModal.hide();
-                }
-            }
-        });
-        ctrl.registerStep({
-            id: 'keyboard-3',
-            title: 'Keyboard <br> Shortcuts',
-            subtitle: 'Step 3 of 3',
-            content: `
-                <p><b>s</b> — Open Settings</p>
-                <p><b>g</b> — Open AAC Grid</p>
-                <p><b>x</b> — Start Switch Access</p>
-                <p>You can use these shortcuts anytime.</p>
-            `,
-             position: 'center',
-            area: ctrl.getArea(3, 4, 0, 3, 3, 4),
-            nextStepId: 'switch-complete',
-            prevStepId: 'keyboard-2',
-            settingsPath: 'home/participant/keyboardShortcuts',
-            onEnter: async (controller) => {
-            },
-            onExit: async (controller) => {
-                if (controller.overlay.dwellTestModal.shown) {
-                    await controller.overlay.dwellTestModal.hide();
-                }
-            }
-        });
 
 
         ctrl.registerStep({
@@ -1157,7 +1035,7 @@ export default class WalkThroughFeature extends Features {
             position: 'center',
             area: ctrl.getArea(3, 4, 0, 0, 0, 0),
             nextStepId: null,
-            prevStepId: 'keyboard-3',
+            prevStepId: 'switch-setup',
             onExit: async (controller) => {
         
             }
@@ -1217,7 +1095,7 @@ export default class WalkThroughFeature extends Features {
             area: ctrl.getArea(3, 4, 0, 3, 3, 4),
             settingsPath: 'home/participant/cursors',
             window: 'settings',
-            nextStepId: 'keyboard-set-1',
+            nextStepId: 'cursor-complete',
             prevStepId: 'cursor-setup-2',
             onExit: async (controller) => {
                 await controller.overlay.mask.hide();
@@ -1227,7 +1105,7 @@ export default class WalkThroughFeature extends Features {
         });
 
         ctrl.registerStep({
-            id: 'keyboard-set-1',
+            id: 'keyboard-1',
             title: 'Keyboard <br> Shortcuts',
             subtitle: 'Step 1 of 3',
             content: `
@@ -1236,59 +1114,11 @@ export default class WalkThroughFeature extends Features {
                 <p><b>x</b> — Start Switch Access</p>
                 <p>You can use these shortcuts anytime.</p>
             `,
-            position: 'right',
-            area: ctrl.getArea(3, 4, 0, 1, 3, 2),
-            nextStepId: 'keyboard-set-2',
-            prevStepId: 'cursor-setup-3',
-            settingsPath: 'home/participant/keyboardShortcuts',
-            onEnter: async (controller) => {
-            },
-            onExit: async (controller) => {
-                if (controller.overlay.dwellTestModal.shown) {
-                    await controller.overlay.dwellTestModal.hide();
-                }
-            }
-        });
-
-        ctrl.registerStep({
-            id: 'keyboard-set-2',
-            title: 'Keyboard <br> Shortcuts',
-            subtitle: 'Step 2 of 3',
-            content: `
-                <p><b>s</b> — Open Settings</p>
-                <p><b>g</b> — Open AAC Grid</p>
-                <p><b>x</b> — Start Switch Access</p>
-                <p>You can use these shortcuts anytime.</p>
-            `,
-            position: 'left',
-            area: ctrl.getArea(3, 4, 0, 2, 3, 3),
-            nextStepId: 'keyboard-set-3',
-            prevStepId: 'keyboard-set-1',
-            settingsPath: 'home/participant/keyboardShortcuts',
-            onEnter: async (controller) => {
-            },
-            onExit: async (controller) => {
-                if (controller.overlay.dwellTestModal.shown) {
-                    await controller.overlay.dwellTestModal.hide();
-                }
-            }
-        });
-
-         ctrl.registerStep({
-            id: 'keyboard-set-3',
-            title: 'Keyboard <br> Shortcuts',
-            subtitle: 'Step 3 of 3',
-            content: `
-                <p><b>s</b> — Open Settings</p>
-                <p><b>g</b> — Open AAC Grid</p>
-                <p><b>x</b> — Start Switch Access</p>
-                <p>You can use these shortcuts anytime.</p>
-            `,
             position: 'center',
-            area: ctrl.getArea(3, 4, 0, 3, 3, 4),
+            area: ctrl.getArea(3, 4, 0, 0, 0, 0),
             nextStepId: 'cursor-complete',
-            prevStepId: 'keyboard-set-2',
-            settingsPath: 'home/participant/keyboardShortcuts',
+            prevStepId: 'cursor-setup-3',
+            settingsPath: 'home/participant/cursors',
             onEnter: async (controller) => {
             },
             onExit: async (controller) => {
@@ -1297,6 +1127,7 @@ export default class WalkThroughFeature extends Features {
                 }
             }
         });
+
 
         
 
@@ -1310,7 +1141,7 @@ export default class WalkThroughFeature extends Features {
             position: 'center',
             area: ctrl.getArea(3, 4, 0, 0, 0, 0),
             nextStepId: null,
-            prevStepId: 'keyboard-set-3',
+            prevStepId: 'keyboard-1',
             onExit: async (controller) => {
             }
         });

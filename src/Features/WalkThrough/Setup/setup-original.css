@@ -61,7 +61,7 @@ setup-window {
     margin-bottom: 20px;
 }
 
-/* When there's only one profile, constrain it similar to GridLayout */
+
 .profiles-grid:has(.profile-card:only-child) {
     grid-template-columns: 1fr;
     max-width: 250px;
@@ -229,12 +229,11 @@ setup-window {
     flex-wrap: nowrap;
 }
 
-/* When there's only one card, constrain its width */
 .access-methods-grid:has(.access-method-card:only-child) {
     max-width: 380px;
 }
 
-/* When there are only two cards, constrain the grid width */
+
 .access-methods-grid:has(.access-method-card:nth-child(2):last-child) {
     max-width: 810px;
 }
@@ -268,7 +267,7 @@ setup-window {
     box-shadow: 0 10px 30px var(--card-shadow);
 }
 
-/* Different color themes for access methods */
+
 .access-method-card[data-method="eye-gaze"] {
     --card-color: #F4E07A;
     --card-shadow: rgba(244, 224, 122, 0.4);

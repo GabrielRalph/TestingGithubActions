@@ -471,6 +471,7 @@ export default class VideoCall extends Features {
             this.sdata.onUser("joined", (key) => {
                 if (key == this.sdata.them) {
                     this._onUserJoined();
+                    this._setWidgetWaitingState(this.sdata.them, true);
                 }
             });
 

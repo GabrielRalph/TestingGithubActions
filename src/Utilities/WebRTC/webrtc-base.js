@@ -381,21 +381,24 @@ class WebRTCConnection {
         this.log("description <-- " + description.type);
         this.log("signalingState: " + PC.signalingState);
     
-    
-        const offerCollision = description.type === "offer" &&
-                              (makingOffer || PC.signalingState !== "stable");
-    
-        this.ignoreOffer = !Signaler.isPolite && offerCollision;
-        if (!this.ignoreOffer) {
-             try {
-                await PC.setRemoteDescription(description);
-                if (description.type === "offer") {
-                    await PC.setLocalDescription();
-                    this.log("description --> " + PC.localDescription.type);
-                    Signaler.send(preferOpus(PC.localDescription));
+        if (description.type === "answer" && PC.signalingState !== "have-local-offer") {
+            this.log(`stale answer ignored (state: ${PC.signalingState})`, "rgb(253, 166, 120)");
+        } else {
+            const offerCollision = description.type === "offer" &&
+                                  (makingOffer || PC.signalingState !== "stable");
+        
+            this.ignoreOffer = !Signaler.isPolite && offerCollision;
+            if (!this.ignoreOffer) {
+                 try {
+                    await PC.setRemoteDescription(description);
+                    if (description.type === "offer") {
+                        await PC.setLocalDescription();
+                        this.log("description --> " + PC.localDescription.type);
+                        Signaler.send(preferOpus(PC.localDescription));
+                    }
+                } catch (e) {
+                    this.log("description error " + e, "rgb(252, 27, 7)");
                 }
-            } catch (e) {
-                this.log("description error " + e, "rgb(252, 27, 7)");
             }
         }
     }
@@ -484,13 +487,6 @@ export class ConnectionManager {
         connection.EventListeners = this.EventListeners;
         await connection.start();
 
-        // this.restartTimeout = setTimeout(() => {
-        //     let isRestart = this.restartCondition(connection);
-        //     connection.log("timeout ended" + (isRestart ? ", restart" : ""));
-        //     if (isRestart) {
-        //         this.start();
-        //     }
-        // }, MinTimeTillRestart);
 
         signaler.on("restart", (timeOfStart) => {
             clearTimeout(this.restartTimeout);

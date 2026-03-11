@@ -228,7 +228,12 @@ export default class VideoCall extends Features {
         let stream = state.remoteStream;
         if (state.isRemoteStreamReady) {
             this._setUserStream(stream, this.sdata.them)
-            this._setWidgetVisibility(this.sdata.them, true);
+        }
+        this._setWidgetVisibility(this.sdata.them, state.ice_state === "connected");
+
+        if (!this._lastWebRTCReady) {
+            this._setWidgetWaitingState(this.sdata.them, !state.isRemoteStreamReady);
+            this._lastWebRTCReady = state.isRemoteStreamReady;
         }
     }
 

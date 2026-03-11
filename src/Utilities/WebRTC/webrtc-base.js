@@ -491,25 +491,25 @@ export class ConnectionManager {
         signaler.on("restart", (timeOfStart) => {
             clearTimeout(this.restartTimeout);
             let timeSinceStart = new Date().getTime() - timeOfStart;
-            connection.log(`${signaler.fb.them} started`, "rgb(255, 134, 237)");
+            this.connection.log(`${signaler.fb.them} started`, "rgb(255, 134, 237)");
 
             // Polite peer with no remote description is waiting for the impolite peer's
             // offer. Restarting here causes a loop — the host will initiate when it
             // receives this peer's restart signal.
             if (signaler.isPolite && this.connection?.PC?.remoteDescription === null) {
-                connection.log("restart ignored (polite, awaiting offer)", "rgb(255, 152, 195)");
+                this.connection.log("restart ignored (polite, awaiting offer)", "rgb(255, 152, 195)");
                 return;
             }
 
             const doRestart = () => {
-                let isRestart = this.restartCondition(connection);
-                connection.log("restart check" + (isRestart ? ", restarting" : ""), "rgb(255, 152, 241)");
+                let isRestart = this.restartCondition(this.connection);
+                this.connection.log("restart check" + (isRestart ? ", restarting" : ""), "rgb(255, 152, 241)");
                 if (isRestart) this.start();
             };
 
             // If connection is already broken, restart immediately — no point waiting.
             // Only delay if the connection is currently healthy (debounce against loops).
-            if (timeSinceStart >= MinTimeTillRestart || this.restartCondition(connection)) {
+            if (timeSinceStart >= MinTimeTillRestart && this.restartCondition(connection)) {
                 doRestart();
             } else {
                 this.restartTimeout = setTimeout(doRestart, MinTimeTillRestart - timeSinceStart);

@@ -509,8 +509,12 @@ export class ConnectionManager {
 
             // If connection is already broken, restart immediately — no point waiting.
             // Only delay if the connection is currently healthy (debounce against loops).
-            if (timeSinceStart >= MinTimeTillRestart && this.restartCondition(this.connection)) {
-                doRestart();
+            if (timeSinceStart >= MinTimeTillRestart) {
+                if (this.restartCondition(this.connection)) {
+                    doRestart();
+                } else {
+                    this.connection.log("restart not needed", "rgb(255, 152, 195)");
+                }
             } else {
                 this.restartTimeout = setTimeout(doRestart, MinTimeTillRestart - timeSinceStart);
             }

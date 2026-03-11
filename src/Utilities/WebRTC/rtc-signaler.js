@@ -75,7 +75,7 @@ export class RTCSignaler {
         })
 
         let initRS = true;
-        return await new Promise((r) => {
+        await new Promise((r) => {
             this.restartListener = fb.onValue(`${fb.them}/restart-connection`, (val) => {
                 if (initRS) {
                     initRS = false;
@@ -85,8 +85,8 @@ export class RTCSignaler {
                     this._dispatchEvent("restart", time);
                 }
             })
-            this._listening = true;
         })
+        this._listening = true;
     }
 
     async restart(){

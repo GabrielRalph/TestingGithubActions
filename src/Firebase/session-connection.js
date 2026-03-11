@@ -161,6 +161,16 @@ export class SessionConnection extends FirebaseFrame {
                 this.userUpdateListeners[type] = [];
             }
             this.userUpdateListeners[type].push(listener);
+
+            // Call the listener for all currently active users of the specified type
+            for (let key in this.activeUsers) {
+                let joined = this.activeUsers[key];
+                if (joined && type === "joined") {
+                    listener(key);
+                } else if (!joined && type === "left") {
+                    listener(key);
+                }
+            }
         }
     }
 

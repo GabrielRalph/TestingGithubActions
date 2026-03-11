@@ -156,18 +156,26 @@ class VideoDisplay extends HideShowTransition {
     }
 
     captureFrame(video) {
-        if (video != null && video.videoWidth > 0.1 && video.videoHeight > 0.1) {
+        if (video != null) {
             const { videoWidth, videoHeight } = video;
-            this.waiting = false;
+            if (videoWidth > 5 && videoHeight > 5) {
+                let sizeString = videoWidth + "x" + videoHeight;
+                if (this._sizeString !== sizeString) {
+                    this._sizeString = sizeString;
+                    console.log("Video size changed to", sizeString);
+                }
 
-            this.aspect = videoWidth / videoHeight;
+                this.waiting = false;
 
-            let cW = Math.min(this.W, videoWidth);
-            let cH = Math.min(this.H, videoHeight);
+                this.aspect = videoWidth / videoHeight;
 
-            this.canvas.width = cW;
-            this.canvas.height = cH;
-            this.ctx.drawImage(video, 0, 0, videoWidth, videoHeight, 0, 0, cW, cH);
+                let cW = Math.min(this.W, videoWidth);
+                let cH = Math.min(this.H, videoHeight);
+
+                this.canvas.width = cW;
+                this.canvas.height = cH;
+                this.ctx.drawImage(video, 0, 0, videoWidth, videoHeight, 0, 0, cW, cH);
+            }
         }
     }
 

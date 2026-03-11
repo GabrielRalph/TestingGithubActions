@@ -253,18 +253,22 @@ class WebRTCConnection {
     }
     
     async onnegotiationneeded(){
-      this.log("negotiation needed");
-      try {
-        this.makingOffer = true;
-    
-        await this.PC.setLocalDescription();
-        this.log("description --> " + this.PC.localDescription.type);
-        this.Signaler.send(preferOpus(this.PC.localDescription));
-      } catch (err) {
-        console.error(err);
-      } finally {
-        this.makingOffer = false;
-      }
+        if (!this.Signaler.isPolite || this.PC.remoteDescription !== null) {
+            this.log("negotiation needed", "rgb(252, 207, 7)");
+            try {
+                this.makingOffer = true;
+
+                await this.PC.setLocalDescription();
+                this.log("description --> " + this.PC.localDescription.type);
+                this.Signaler.send(preferOpus(this.PC.localDescription));
+            } catch (err) {
+                this.log("negotion error " + err, "rgb(252, 27, 7)");
+            } finally {
+                this.makingOffer = false;
+            }
+        } else {
+            this.log("negotiation ignored", "rgb(252, 113, 7)");
+        }
     }
     
     oniceconnectionstatechange(){
@@ -383,14 +387,15 @@ class WebRTCConnection {
     
         this.ignoreOffer = !Signaler.isPolite && offerCollision;
         if (!this.ignoreOffer) {
-            try {
-              await PC.setRemoteDescription(description);
-              if (description.type === "offer") {
-                await PC.setLocalDescription();
-                this.log("description --> " + PC.localDescription.type);
-                Signaler.send(preferOpus(PC.localDescription))
-              }
+             try {
+                await PC.setRemoteDescription(description);
+                if (description.type === "offer") {
+                    await PC.setLocalDescription();
+                    this.log("description --> " + PC.localDescription.type);
+                    Signaler.send(preferOpus(PC.localDescription));
+                }
             } catch (e) {
+                this.log("description error " + e, "rgb(252, 27, 7)");
             }
         }
     }
@@ -479,35 +484,39 @@ export class ConnectionManager {
         connection.EventListeners = this.EventListeners;
         await connection.start();
 
-        this.restartTimeout = setTimeout(() => {
-            let isRestart = this.restartCondition(connection);
-            connection.log("timeout ended" + (isRestart ? ", restart" : ""));
-            if (isRestart) {
-                this.start();
-            }
-        }, MinTimeTillRestart);
+        // this.restartTimeout = setTimeout(() => {
+        //     let isRestart = this.restartCondition(connection);
+        //     connection.log("timeout ended" + (isRestart ? ", restart" : ""));
+        //     if (isRestart) {
+        //         this.start();
+        //     }
+        // }, MinTimeTillRestart);
 
         signaler.on("restart", (timeOfStart) => {
-            
             clearTimeout(this.restartTimeout);
-
             let timeSinceStart = new Date().getTime() - timeOfStart;
-            connection.log(`${signaler.fb.them} started`);
+            connection.log(`${signaler.fb.them} started`, "rgb(255, 134, 237)");
 
-            let restart = () => {
-                this.start();
+            // Polite peer with no remote description is waiting for the impolite peer's
+            // offer. Restarting here causes a loop — the host will initiate when it
+            // receives this peer's restart signal.
+            if (signaler.isPolite && this.connection?.PC?.remoteDescription === null) {
+                connection.log("restart ignored (polite, awaiting offer)", "rgb(255, 152, 195)");
+                return;
             }
 
-            if (timeSinceStart < MinTimeTillRestart) {
-                this.restartTimeout = setTimeout(() => {
-                    let isRestart = this.restartCondition(connection);
-                    connection.log("timeout ended" + (isRestart ? ", restart" : ""));
-                    if (isRestart) {
-                        restart();
-                    }
-                }, MinTimeTillRestart - timeSinceStart);
+            const doRestart = () => {
+                let isRestart = this.restartCondition(connection);
+                connection.log("restart check" + (isRestart ? ", restarting" : ""), "rgb(255, 152, 241)");
+                if (isRestart) this.start();
+            };
+
+            // If connection is already broken, restart immediately — no point waiting.
+            // Only delay if the connection is currently healthy (debounce against loops).
+            if (timeSinceStart >= MinTimeTillRestart || this.restartCondition(connection)) {
+                doRestart();
             } else {
-                restart();
+                this.restartTimeout = setTimeout(doRestart, MinTimeTillRestart - timeSinceStart);
             }
         });
     }

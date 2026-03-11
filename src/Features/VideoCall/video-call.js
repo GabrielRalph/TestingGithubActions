@@ -118,8 +118,8 @@ export default class VideoCall extends Features {
                 video.requestVideoFrameCallback = window.requestAnimationFrame.bind(window);
             }
             let next = () => {
-                if (video.videoWidth > 0 && video.videoHeight > 0) {
-                     this._setWidgetWaitingState(user, false);
+                if (video.videoWidth > 5 && video.videoHeight > 5) {
+                    this._setWidgetWaitingState(user, false);
                 }
                 for (let w of this._allWidgets) {
                     if (w.isVisibleForUser()) {
@@ -198,10 +198,22 @@ export default class VideoCall extends Features {
         })
     }
 
-    _setWidgetWaitingState(user, bool) {
-        this._allWidgets.forEach(w => {
-            w[user].waiting = bool;
-        })
+    _setWidgetWaitingState(user, bool, wait = 0) {
+        clearTimeout(this._setWidgetWaitingStateTimeout);
+        if (wait > 0) {
+            this._setWidgetWaitingStateTimeout = setTimeout(() => {
+                this._setWidgetWaitingState(user, bool);
+            }, wait)
+        } else {
+            let k = "_waitingState"+user;
+            if (this[k] !== bool) {
+                this[k] = bool;
+                console.log("Setting waiting state for", user, "to", bool);
+                this._allWidgets.forEach(w => {
+                    w[user].waiting = bool;
+                })
+            }
+        }
     }
 
     /**
@@ -214,6 +226,8 @@ export default class VideoCall extends Features {
 
 
     _setWidgetVisibility(user, isVisible) {
+
+        console.log((!isVisible ? "Clearing" : "Showing") + " widgets for user", user);
         this._allWidgets.forEach(w => {
             w.toggleUserVideoDisplay(user, isVisible);
         })
@@ -227,13 +241,10 @@ export default class VideoCall extends Features {
     _onWebRTCState(state) {
         let stream = state.remoteStream;
         if (state.isRemoteStreamReady) {
-            this._setUserStream(stream, this.sdata.them)
-        }
-        this._setWidgetVisibility(this.sdata.them, state.ice_state === "connected");
-
-        if (!this._lastWebRTCReady) {
-            this._setWidgetWaitingState(this.sdata.them, !state.isRemoteStreamReady);
-            this._lastWebRTCReady = state.isRemoteStreamReady;
+            this._setUserStream(stream, this.sdata.them);
+            this._setWidgetWaitingState(this.sdata.them, false);
+        } else {
+            this._setWidgetWaitingState(this.sdata.them, true, 1500);
         }
     }
 
@@ -340,18 +351,30 @@ export default class VideoCall extends Features {
 
     async _onUserLeft(){
         this._setWidgetWaitingState(this.sdata.them, true);
-        setTimeout(() => {
+        clearTimeout(this._onUserLeftTimeout);
+        this._onUserLeftTimeout = setTimeout(() => {
             if (!this.sdata.isUserActive(this.sdata.them)) {
                 this._clearWidgets(this.sdata.them);
             }
         }, 5000);
     }
 
+    async _onUserJoined(){
+        clearTimeout(this._onUserLeftTimeout);
+        this._setWidgetVisibility(this.sdata.them, true);
+    }
+
+
+
+
     /**
      * Sets the volume for all video elements
      * @param {number} value - 0 to 100
      */
     _setVolume(value){
+        if (typeof value !== "number" || Number.isNaN(value) || value < 0) {
+            value = 75;
+        }
         value = value / 100; // convert to 0-1 rang
         for (const user in this.videos) {
             this.videos[user].volume = value;
@@ -444,6 +467,12 @@ export default class VideoCall extends Features {
                     this._onUserLeft();
                 }
             })
+
+            this.sdata.onUser("joined", (key) => {
+                if (key == this.sdata.them) {
+                    this._onUserJoined();
+                }
+            });
 
 
             this._setWidgetVisibility(this.sdata.me, true);

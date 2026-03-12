@@ -5,8 +5,8 @@ import { AccessTextArea } from "../../Utilities/access-textarea.js";
 import { KeyboardIcon, KeyboardLayout, SuggestionIcon } from "./keyboard-base.js";
 
 function makeLettersIcon(letters) {
-    let letterText = [...letters].slice(0,9).map((l, i) => `<text x = "${i%3}" y ="${Math.floor(i/3)}" font-size = "0.7" fill="white" font-family = "monospace">${l}</text>`).join("");
-    let svg = `<svg viewBox="0 -0.7 2.5 3" xmlns="http://www.w3.org/2000/svg">${letterText}</svg>`;
+    let letterText = [...letters].slice(0,9).map((l, i) => `<text x = "${i%3}" y ="${Math.floor(i/3)}" font-size = "0.9" fill="white" font-family = "monospace">${l}</text>`).join("");
+    let svg = `<svg viewBox="0 -0.8 2.6 3.1" xmlns="http://www.w3.org/2000/svg">${letterText}</svg>`;
     return svg;
 }
 

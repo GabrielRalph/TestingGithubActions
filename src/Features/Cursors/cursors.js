@@ -206,6 +206,7 @@ export default class Cursors extends Features {
             }
         }
         updatef();
+        
         this.session.settings.addEventListener("change", (e) => {
             let {user, group} = e;
             if (user == this.me && group == "cursors") {

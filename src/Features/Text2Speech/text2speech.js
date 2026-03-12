@@ -146,11 +146,9 @@ async function getUtteranceURL(utterance, isName) {
 
 /** @param {string} voiceName */
 async function changeVoice(voiceName) {
-
     log(`Changing voice to '${voiceName}'`, [], "load");
     const old = VOICE_NAME in UTTERANCES ? UTTERANCES[VOICE_NAME] : {};
     const oldPhrases = Object.keys(old);
-    
 
     const newp = voiceName in UTTERANCES ? UTTERANCES[voiceName] : {};
     const newPhrases = new Set(Object.keys(newp));
@@ -239,6 +237,7 @@ export default class Text2Speech extends Features {
         if (!(voiceName in MY_VOICES)) {
             throw "Invalid voice name";
         }
+
         await changeVoice(voiceName);
     }
 
@@ -308,63 +307,47 @@ export default class Text2Speech extends Features {
 
 
         // Initial settings
-        VOLUME = this.session.settings.get(`${this.sdata.me}/volume/level`) / 100;
-        let voice = this.session.settings.get(`${this.sdata.me}/languages/voice`);
-        log("Initial voice = '" + voice + "' volume = " + VOLUME);
-
-
-        // Listen to settings changes 
         let tempVoice = null;
-        this.session.settings.addEventListener("change", (e) => {
-            const {user, group, setting, value} = e;
+        let isSettingsInLanguage = () => this.session.currentOpenFeature === "settings" && this.session.settings.openPath.endsWith("languages");
+        this.session.settings.onValue(`${this.sdata.me}/languages/voice`, (value) => {
+            if (value in MY_VOICES && value !== tempVoice) {
+                // If the user is currently in the languages settings page
+                // then temporarily change the voice to the new one and speak
+                // the name of the voice.
+                if (isSettingsInLanguage()) {
+                    tempVoice = value;
+                    this.speakName(value, true);
 
-            // If the setting change petains to this user
-            if (user == this.sdata.me){
-                let isSettingsInLanguage = this.session.currentOpenFeature === "settings" && this.session.settings.openPath.endsWith("languages");
-
-                // If the setting is in languages group
-                if (group == "languages") {
-
-                    // If the setting is voice
-                    if (setting == "voice" && value in MY_VOICES && tempVoice !== value) {
-
-                        // If the user is currently in the languages settings page
-                        // then temporarily change the voice to the new one and speak
-                        // the name of the voice.
-                        if (isSettingsInLanguage) {
-                            tempVoice = value;
-                            this.speakName(value, true);
-
-                        // Otherwise change the voice immediately
-                        } else {
-                            changeVoice(value)
-                            tempVoice = null;
-                        }
-
-                    // If the setting is speed
-                    } else if (setting == "speed") {
-                        let newSpeed = SPEEDS[value] || 1;
-
-                        // If speed has changed
-                        if (newSpeed !== SPEED) {
-
-                            // If the user is currently in the languages settings page
-                            // speak the current voice name at the new speed
-                            if (isSettingsInLanguage) {
-                                this.speakName(tempVoice || VOICE_NAME, true);
-                            }
-
-                            // Change speed
-                            SPEED = newSpeed;
-                        }
-                    }
-
-                // If the setting is in volume group change the volume
-                } else if (group == "volume" && setting == "level") {
-                    VOLUME = value/100;
-                } 
+                // Otherwise change the voice immediately
+                } else {
+                    changeVoice(value)
+                    tempVoice = null;
+                }
             }
-        })
+        });
+
+        this.session.settings.onValue(`${this.sdata.me}/languages/speed`, (value) => {
+            let newSpeed = SPEEDS[value] || 1;
+
+            // If speed has changed
+            if (newSpeed !== SPEED) {
+
+                // If the user is currently in the languages settings page
+                // speak the current voice name at the new speed
+                if (isSettingsInLanguage()) {
+                    this.speakName(tempVoice || VOICE_NAME, true);
+                }
+
+                // Change speed
+                SPEED = newSpeed;
+            }
+        });
+
+        this.session.settings.onValue(`${this.sdata.me}/volume/level`, (value) => {
+            VOLUME = value/100;
+        });
+
+        
 
         // On exit of settings, if there is a temp voice, change to it
         this.session.settings.addEventListener("exit", (e) => {
@@ -373,8 +356,6 @@ export default class Text2Speech extends Features {
                 tempVoice = null;
             }
         });
-
-        await changeVoice(voice);
        
         // Load buffered utterances
         this.loadUtterances(bufferedUtterances);

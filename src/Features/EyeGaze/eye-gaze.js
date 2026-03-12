@@ -1,23 +1,12 @@
 import { Vector } from "../../SvgPlus/4.js";
-import { AccessButton, AccessEvent } from "../../Utilities/Buttons/access-buttons.js";
-import { GridIcon } from "../../Utilities/Buttons/grid-icon.js";
-import { HideShowTransition } from "../../Utilities/hide-show.js";
-import { SvgResize } from "../../Utilities/svg-resize.js";
-import { relURL, dotGrid, argmin } from "../../Utilities/usefull-funcs.js";
+import { AccessEvent } from "../../Utilities/Buttons/access-buttons.js";
 import { addProcessListener, startProcessing, startWebcam, stopProcessing } from "../../Utilities/webcam.js";
 import { Features, SquidlyFeatureWindow } from "../features-interface.js";
 import { load } from "./Algorithm/index.js";
 import { CalibrationFrame } from "./calibration-frame.js";
 import { FeedbackWindow } from "./feedback-frame.js";
 import { addPointToHeatmaps, Heatmap } from "./heatmap.js";
-
-
-class CalibrationScreenArea extends SquidlyFeatureWindow {
-   constructor(){
-        super("calibration-window");
-        this.calibrationFrame = this.createChild(CalibrationFrame)
-   }
-}
+import { TestScreen } from "./test-screen.js";
 
 function clampV(v, min, max) {
     return new Vector(
@@ -30,133 +19,12 @@ function clampV0_1(v) {
     return clampV(v, new Vector(0, 0), new Vector(1, 1));
 }
 
-class TestScreen extends SquidlyFeatureWindow {
-    dotSize = 0.08;
-    constructor(){
-        super("test-screen", new HideShowTransition("test-screen"));
-        let svg = this.createChild(SvgResize, {});
-        svg.shown = true;
-        this.svg = svg;
-        svg.addDrawable(this)
-
-        // let b = this.createChild(AccessButton, {
-        //     events: {
-        //         "access-click": (e) => this.dispatchEvent(new AccessEvent("close", e))
-        //     },
-        //     class: "close",
-        // }, "test-close");
-        // b.createChild(Icon, {}, "close");
-        // b.createChild("div", {content: "Close"});
-        this.createChild(GridIcon, {}, {
-            type: "action",
-            displayValue: "Close",
-            symbol: "close",
-            events: {
-                "access-click": (e) => this.dispatchEvent(new AccessEvent("close", e))
-            }
-        })
+class CalibrationScreenArea extends SquidlyFeatureWindow {
+   constructor(){
+        super("calibration-window");
+        this.calibrationFrame = this.createChild(CalibrationFrame)
    }
-
-
-   hide(){
-        this.root.hide();
-        this.svg.stop();
-        this.shownUser = null;
-   }
-
-   async showFor(user) {
-        this.shownUser = user;
-        this.svg.start();
-        await this.root.show();
-   }
-
-    setEyeData(pos, user) {
-        if (this.shownUser == user) {
-            this.eyePosition = pos;
-        }
-    }
-
-    draw(){
-        let {svg} = this;
-        svg.innerHTML = "";
-        let width = this.clientWidth;
-        let height = this.clientHeight;
-        let diag = Math.sqrt(width**2 + height**2);
-        let dotSize = this.dotSize * diag;
-        let mx = dotSize * 0.75;
-        let my = dotSize * 0.75;
-        
-        let dots = dotGrid(3, new Vector(mx, my), new Vector(width -mx, my), new Vector(mx, height - my), new Vector(width - mx, height - my));
-        let dFurthest = Math.max((width-2*mx)/3, (height-2*my)/3);
-        let p;
-        let iClosest = -1;
-        if (this.eyePosition) {
-            p = this.eyePosition.mul(width, height);
-            iClosest =  argmin(dots.map(d => d.sub(p).norm()));
-        }
-
-        dots.forEach((pos, i) => {
-            if (i != 7) {
-                let dot = svg.createChild("g", {
-                    class: "dot",
-                    transform: `translate(${pos.x} ${pos.y})`,
-                });
-
-                dot.createChild("circle", { 
-                    class: "big",
-                    cx: 0,
-                    cy: 0,
-                    r: (dotSize/2),
-                });
-                dot.createChild("circle", { 
-                    class: "small",
-                    cx: 0,
-                    cy: 0,
-                    r: (dotSize/2) * 0.1,
-                });
-
-                if (i == iClosest) {
-                    let dist = 1 - p.sub(pos).norm() / dFurthest;
-                    if (dist < 0) dist = 0;
-
-                    let r = ( 0.1 + 0.45 * dist) * dotSize / 2;
-                    let stroke = dotSize * dist * 0.45;
-                    dot.createChild("circle", { 
-                        class: "proximity",
-                        cx: 0,
-                        cy: 0,
-                        r: r,
-                        "stroke-width": stroke,
-                    });
-                }
-            }
-        });
-    }
-
-    static get usedStyleSheets() {
-        return [relURL("./styles.css", import.meta), GridIcon.styleSheet]
-    }
 }
-
-class RestAccessButton extends AccessButton {
-    isPointInElement(p) {
-        let [pos,size] = this.bbox;
-        return p.y > pos.y; 
-    }
-
-    get disableSwitch() {return true}
-}
-
-class RestButton extends SquidlyFeatureWindow {
-    constructor() {
-        super("rest-button");
-        this.button = this.createChild(RestAccessButton, {class: "rest", content: "rest"})
-    }
-    static get usedStyleSheets() {
-        return [relURL("./styles.css", import.meta)]
-    }
-}
-
 
 export default class EyeGazeFeature extends Features {
     /**@type {CalibrationFrame} */
@@ -176,7 +44,6 @@ export default class EyeGazeFeature extends Features {
         this.feedbackWindow = new FeedbackWindow(session, sdata);
         this.calibrationWindow = new CalibrationScreenArea();
         this.dummyFrame = new SquidlyFeatureWindow("div"); // Used to measure calibration frame bbox
-        this.restButton = new RestButton();
 
         this.calibrationFrame = this.calibrationWindow.calibrationFrame;
 
@@ -201,7 +68,6 @@ export default class EyeGazeFeature extends Features {
             "close": (e) => e.waitFor(this._showTestScreen(null)),
         }
         
-  
         // Update cursor positions
         this.addEyeDataListener((eyeP, bbox, hidden) => {
             let key = this.sdata.me + "-eyes";
@@ -242,7 +108,6 @@ export default class EyeGazeFeature extends Features {
             this._eyeGazeOn = bool;
             this._updateProcessingState();
             this.session.toolBar.setMenuItemProperty("access/eye/symbol", bool ? "eye" : "noeye");
-            this.sdata.logChange("eye-gaze.toggle", {value: bool ? "on" : "off"})
             this.sdata.set("on", bool);
         }
     }
@@ -278,11 +143,15 @@ export default class EyeGazeFeature extends Features {
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
     set _isProcessing(bool) {
+        bool = !!bool;
         if (bool != this.__isProcessing) {
             if (bool) {
                 startProcessing();
+                this.sdata.logChange("eye-gaze.processing", {value: true});
+                console.log("%cStarting eye gaze processing", "background: rgb(29, 196, 3); font-weight: bold; color: white; padding: 2px 5px; border-radius: 3px;");
             } else {
                 stopProcessing();
+                console.log("%cStopping eye gaze processing", "background: rgb(180, 45, 4); font-weight: bold; color: white; padding: 2px 5px; border-radius: 3px;");
                 this._onEyeData(null); // Clear eye data
             }
         }
@@ -290,7 +159,7 @@ export default class EyeGazeFeature extends Features {
     }
 
     _updateProcessingState() {
-        this._isProcessing = (!this._eyeGazeDisabled) && (this._eyeGazeOn || this._feedbackIsOpen || this._calibrating) ;
+        this._isProcessing = (this._eyeGazeEnabled) && (this._eyeGazeOn || this._feedbackIsOpen || this._calibrating) ;
     } 
 
     _openCloseFeedback(state){
@@ -421,22 +290,14 @@ export default class EyeGazeFeature extends Features {
             text: "participant"
         });
 
-        this.session.settings.addEventListener("change", (e) => {
-            let path = e.path.split("/");
-            let [user, type, setting] = path;
-            if (user == this.sdata.me && type == "calibration") {
-                this.calibrationFrame[setting] = e.value;
-            } else if (user == this.me && type == "eye-gaze-enabled") {
-                this._eyeGazeDisabled = !e.value;
-                this._updateProcessingState();
-            }   
+        this.session.settings.onValue(`${this.sdata.me}/calibration/guide`, (val) => this.calibrationFrame.guide = val);
+        this.session.settings.onValue(`${this.sdata.me}/calibration/size`, (val) => this.calibrationFrame.size = val);
+        this.session.settings.onValue(`${this.sdata.me}/calibration/speed`, (val) => this.calibrationFrame.speed = val);
+        this.session.settings.onValue(`${this.sdata.me}/eye-gaze-enabled`, (val) => {
+            console.log("eye-gaze-enabled", val);
+            this._eyeGazeEnabled = val === true;
+            this._updateProcessingState();
         });
-
-        this.calibrationFrame.guide = this.session.settings.get(`${this.sdata.me}/calibration/guide`);
-        this.calibrationFrame.size = this.session.settings.get(`${this.sdata.me}/calibration/size`);
-        this.calibrationFrame.speed = this.session.settings.get(`${this.sdata.me}/calibration/speed`);
-        this._eyeGazeDisabled = !this.session.settings.get(`${this.sdata.me}/eye-gaze-enabled`);
-        this.sdata.logChange("eye-gaze.disabled", {value: this._eyeGazeDisabled})
 
         addProcessListener(this._onEyeData.bind(this));
 
@@ -464,14 +325,14 @@ export default class EyeGazeFeature extends Features {
         // ration sequence
         this.sdata.onValue(`calibrating/${me}`, this._beginCalibrationSequence.bind(this));
 
-        let init = true;
+        let initC = true;
 
         // Calibration state of the other user
         this.sdata.onValue(`calibrating/${them}`, async (isCalibrating) => {
             this._areTheyCalibrating = isCalibrating;
 
             // If it isn't the initial onValue call and isCalibrating is either true or false
-            if (!init && isCalibrating !== null) {
+            if (!initC && isCalibrating !== null) {
                 // The other user is calibrating
                 if (isCalibrating === true) {
                     this.session.notifications.notify(`The ${them} is calibrating`, "info");
@@ -491,7 +352,7 @@ export default class EyeGazeFeature extends Features {
                     }
                 }
             }
-            init = false;
+            initC = false;
         });
 
         // Opening and closing the test window 

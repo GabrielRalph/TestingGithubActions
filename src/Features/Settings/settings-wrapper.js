@@ -64,13 +64,12 @@ export function chooseProfile(profileID) {
         } 
 
         ParticipantSettings = new SettingsFrame(new FirebaseFrame(participantSettings), ParticipantSettingOptions);
-        ParticipantSettings.profileID = profileID;
         ParticipantSettings.addChangeListener((path,value) => {
             for (let listener of settingChangeListeners) {
                 listener("participant/"+path, value);
             }
-        })
-        ParticipantSettings._callUpdateForAllSettings();
+        });
+        ParticipantSettings.profileID = profileID;
     }
 }
 
@@ -91,7 +90,6 @@ export function watchProfiles(hostUID, callback) {
 
    
     let removed = profilesFrame.onChildRemoved(null, (oldData, profileID) => {
-        console.log("Profile removed", profileID);
         if (profileID in profileListeners) {
             profileListeners[profileID]();
             delete profileListeners[profileID];
@@ -132,7 +130,8 @@ export async function createProfile(hostUID, name) {
 
  
 /** Initialises the settings for the session
- * @param {SessionDataFrame} sdata
+ * @param {string} hostUID
+ * @param {string|null} profileID - The profile ID to use for the participant settings, or null to use the default settings
  */
 export async function initialise(hostUID, profileID = null) {
     let hostSettingsPath = `users/${hostUID}/settings/host`
@@ -173,7 +172,7 @@ export function getSettingsAsObject() {
  * @param {string} name - The name of the setting
  */
 export function getValue(name) {
-    let value = null;
+    let value = undefined;
     if (name.startsWith("host/profileSettings")) {
         let key = name.split("/")[2];
         value = hostPresets ? (hostPresets[key] || null) : null;
@@ -193,11 +192,7 @@ export function getStringValue(name) {
     let setting = getSetting(name);
     let value = null;
     if (setting) {
-        if (setting.options.toString) {
-            value = setting.options.toString(setting.value);
-        } else {
-            value = setting.value;
-        }
+        value = setting.toString();
     }
    return value;
 }

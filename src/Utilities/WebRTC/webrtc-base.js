@@ -7,18 +7,24 @@ const MinTimeTillRestart = 10000; // 5 seconds
 
 console.log(`%cWebRTC Base Loaded ${MinTimeTillRestart}`, 'color:rgb(252, 113, 7); background:rgb(27, 30, 33); padding: 10px; border-radius: 10px;');
 
+window.show_rtc_base = true
 /* Log Functions
     */
-window.show_rtc_base = false;
-function rtc_base_log(str) {
-    if (window.show_rtc_base) {
-      console.log("%c\t" + str, 'color:rgb(186, 218, 85); background:rgb(27, 30, 33); padding: 10px; border-radius: 10px;');
-    }
-}
 
-function rtc_l1_log(str) {
-  console.log("%c" + str, 'color:#00a3fd; background:rgb(27, 30, 33); padding: 10px; border-radius: 10px;');
-}
+let LOGS = {}
+window.WebRTCLogs = LOGS;
+
+// function rtc_base_log(str) {
+//     if (window.show_rtc_base) {
+//         LOGS.m += str + "\n";
+//         console.log("%c\t" + str, 'color:rgb(186, 218, 85); background:rgb(27, 30, 33); padding: 10px; border-radius: 10px;');
+//     }
+// }
+
+// function rtc_l1_log(str) {
+//     LOGS.m += str + "\n";
+//     console.log("%c" + str, 'color:#00a3fd; background:rgb(27, 30, 33); padding: 10px; border-radius: 10px;');
+// }
 
 function preferOpus(description) {
     return description;
@@ -89,6 +95,7 @@ class WebRTCConnection {
 
     constructor(config, stream, signaler, useDataChannel = true) {
         this.id = GlobalCount;
+        LOGS[this.id] = "";
         this.config = config;
         this.LocalStream = stream;
         this.Signaler = signaler;
@@ -159,6 +166,9 @@ class WebRTCConnection {
 
         let cc = (val, isLast) => `color: ${val ? "#bada55" : "#eb5533"}; background: rgb(18, 17, 17); padding: 3px; ${isLast ? "border-radius: 0px 10px 10px 0px; padding-right: 5px;" : ""}`;
 
+        let logStr = values.map(v => `${v[0]}: ${v[1] ? "ready" : "not ready"}`).join(" | ");
+        LOGS[this.id] += logStr + "\n";
+
         console.log(
         `%c${this.id}: ${values.map(v => `%c${v[0]}`).join(" ")}`, 
         `background: ${this.isStatusReady ? "rgb(8, 143, 17)" : "rgb(203, 13, 13)"}; padding: 3px 3px 3px 5px; color: white; border-radius: 10px 0px 0px 10px;`,
@@ -166,11 +176,14 @@ class WebRTCConnection {
     }
 
     log(string, color = "rgb(7, 166, 252)") {
-        console.log(
-        `%c${this.id}: %c${string}`, 
-        `background: ${this.isStatusReady ? "rgb(8, 143, 17)" : "rgb(203, 13, 13)"}; padding: 3px 3px 3px 5px; color: white; border-radius: 10px 0px 0px 10px;`,
-        `color: ${color}; background: rgb(18, 17, 17); padding: 3px; border-radius: 0px 10px 10px 0px; padding-right: 5px;`
-        );
+        LOGS[this.id] += string + "\n";
+        if (window.show_rtc_base) {
+            console.log(
+            `%c${this.id}: %c${string}`, 
+            `background: ${this.isStatusReady ? "rgb(8, 143, 17)" : "rgb(203, 13, 13)"}; padding: 3px 3px 3px 5px; color: white; border-radius: 10px 0px 0px 10px;`,
+            `color: ${color}; background: rgb(18, 17, 17); padding: 3px; border-radius: 0px 10px 10px 0px; padding-right: 5px;`
+            );
+        }
     }
       
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -214,40 +227,48 @@ class WebRTCConnection {
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ WEBRTC BASE METHODS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
     
-    
+    /**
+     * @param {{track: MediaStreamTrack, streams: MediaStream[]}} param0
+     */
     ontrackadded({ track, streams }){
         streams[0].oninactive = () => {
-            rtc_base_log("STream inactive")
+            this.log("STream inactive")
         }
-        rtc_base_log(`track received ${track.kind} [${streams[0].id.split("-")[0]}]`);
+        this.log(`track received ${track.kind} [${streams[0].id.split("-")[0]}] (${track.enabled ? "enabled" : "disabled"}) (${track.muted ? "muted" : "unmuted"})`);
         this.RemoteStream = streams[0];
     
-        track.onunmute = () => {
-            rtc_base_log("track unmuted " + track.kind);
+        let onunmute = () => {
+            this.log("track unmuted " + track.kind);
             this.RemoteContentStatus[track.kind] = track;
             this.updateHandler();
         };
-        
-        track.onmute = () => {
-            rtc_base_log("track muted " + track.kind);
+        track.addEventListener("unmute", onunmute);
+        if (!track.muted && track.enabled) onunmute();
+
+        track.addEventListener("mute", () => {
+            this.log("track muted " + track.kind);
             this.RemoteContentStatus[track.kind] = null;
             this.updateHandler();
-        }
+        });
     }
     
     async onnegotiationneeded(){
-      rtc_base_log("negotiation needed " );
-      try {
-        this.makingOffer = true;
-    
-        await this.PC.setLocalDescription();
-        rtc_base_log("description --> " + this.PC.localDescription.type);
-        this.Signaler.send(preferOpus(this.PC.localDescription));
-      } catch (err) {
-        console.error(err);
-      } finally {
-        this.makingOffer = false;
-      }
+        if (!this.Signaler.isPolite || this.PC.remoteDescription !== null) {
+            this.log("negotiation needed", "rgb(252, 207, 7)");
+            try {
+                this.makingOffer = true;
+
+                await this.PC.setLocalDescription();
+                this.log("description --> " + this.PC.localDescription.type);
+                this.Signaler.send(preferOpus(this.PC.localDescription));
+            } catch (err) {
+                this.log("negotion error " + err, "rgb(252, 27, 7)");
+            } finally {
+                this.makingOffer = false;
+            }
+        } else {
+            this.log("negotiation ignored", "rgb(252, 113, 7)");
+        }
     }
     
     oniceconnectionstatechange(){
@@ -263,7 +284,7 @@ class WebRTCConnection {
     }
     
     onicecandidate(data) {
-        rtc_base_log("candidate -->");
+        this.log("candidate -->");
         this.Signaler.send(data.candidate);
     }
     
@@ -357,33 +378,37 @@ class WebRTCConnection {
     
     async onDescription(description) {
         const {PC, Signaler, makingOffer} = this;
-        rtc_base_log("description <-- " + description.type);
-        rtc_base_log(PC.signalingState);
+        this.log("description <-- " + description.type);
+        this.log("signalingState: " + PC.signalingState);
     
-    
-        const offerCollision = description.type === "offer" &&
-                              (makingOffer || PC.signalingState !== "stable");
-    
-        this.ignoreOffer = !Signaler.isPolite && offerCollision;
-        if (!this.ignoreOffer) {
-            try {
-              await PC.setRemoteDescription(description);
-              if (description.type === "offer") {
-                await PC.setLocalDescription();
-                rtc_base_log("description --> " + PC.localDescription.type);
-                Signaler.send(preferOpus(PC.localDescription))
-              }
-            } catch (e) {
+        if (description.type === "answer" && PC.signalingState !== "have-local-offer") {
+            this.log(`stale answer ignored (state: ${PC.signalingState})`, "rgb(253, 166, 120)");
+        } else {
+            const offerCollision = description.type === "offer" &&
+                                  (makingOffer || PC.signalingState !== "stable");
+        
+            this.ignoreOffer = !Signaler.isPolite && offerCollision;
+            if (!this.ignoreOffer) {
+                 try {
+                    await PC.setRemoteDescription(description);
+                    if (description.type === "offer") {
+                        await PC.setLocalDescription();
+                        this.log("description --> " + PC.localDescription.type);
+                        Signaler.send(preferOpus(PC.localDescription));
+                    }
+                } catch (e) {
+                    this.log("description error " + e, "rgb(252, 27, 7)");
+                }
             }
         }
     }
     
     async onCandidate(candidate) {
-        rtc_base_log("candidate <--");
+        this.log("candidate <--");
     
         try {
             await this.PC.addIceCandidate(candidate);
-            rtc_base_log("candidate <--");
+            this.log("candidate <--");
         } catch (e) {
             if (!this.ignoreOffer) {
             }
@@ -414,7 +439,7 @@ export class ConnectionManager {
     stream = null;
     signaler = null;
     config = null;
-    restartCondition = (connection) => connection.sessionState !== "open";
+    restartCondition = (connection) => !connection.isStatusReady;
 
     constructor(useDataChannel = true, monitorTracks = {video: true, audio: true}, restartCondition = null) {
         this.useDataChannel = useDataChannel;
@@ -462,27 +487,36 @@ export class ConnectionManager {
         connection.EventListeners = this.EventListeners;
         await connection.start();
 
+
         signaler.on("restart", (timeOfStart) => {
-            
             clearTimeout(this.restartTimeout);
-
             let timeSinceStart = new Date().getTime() - timeOfStart;
-            connection.log(`${signaler.fb.them} started`);
+            this.connection.log(`${signaler.fb.them} started`, "rgb(255, 134, 237)");
 
-            let restart = () => {
-                this.start();
+            // Polite peer with no remote description is waiting for the impolite peer's
+            // offer. Restarting here causes a loop — the host will initiate when it
+            // receives this peer's restart signal.
+            if (signaler.isPolite && this.connection?.PC?.remoteDescription === null) {
+                this.connection.log("restart ignored (polite, awaiting offer)", "rgb(255, 152, 195)");
+                return;
             }
 
-            if (timeSinceStart < MinTimeTillRestart) {
-                this.restartTimeout = setTimeout(() => {
-                    let isRestart = this.restartCondition(connection);
-                    connection.log("timeout ended" + (isRestart ? ", restart" : ""));
-                    if (isRestart) {
-                        restart();
-                    }
-                }, MinTimeTillRestart - timeSinceStart);
+            const doRestart = () => {
+                let isRestart = this.restartCondition(this.connection);
+                this.connection.log("restart check" + (isRestart ? ", restarting" : ""), "rgb(255, 152, 241)");
+                if (isRestart) this.start();
+            };
+
+            // If connection is already broken, restart immediately — no point waiting.
+            // Only delay if the connection is currently healthy (debounce against loops).
+            if (timeSinceStart >= MinTimeTillRestart) {
+                if (this.restartCondition(this.connection)) {
+                    doRestart();
+                } else {
+                    this.connection.log("restart not needed", "rgb(255, 152, 195)");
+                }
             } else {
-                restart();
+                this.restartTimeout = setTimeout(doRestart, MinTimeTillRestart - timeSinceStart);
             }
         });
     }

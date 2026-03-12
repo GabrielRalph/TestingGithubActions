@@ -118,8 +118,8 @@ export default class VideoCall extends Features {
                 video.requestVideoFrameCallback = window.requestAnimationFrame.bind(window);
             }
             let next = () => {
-                if (video.videoWidth > 0 && video.videoHeight > 0) {
-                     this._setWidgetWaitingState(user, false);
+                if (video.videoWidth > 5 && video.videoHeight > 5) {
+                    this._setWidgetWaitingState(user, false);
                 }
                 for (let w of this._allWidgets) {
                     if (w.isVisibleForUser()) {
@@ -198,10 +198,22 @@ export default class VideoCall extends Features {
         })
     }
 
-    _setWidgetWaitingState(user, bool) {
-        this._allWidgets.forEach(w => {
-            w[user].waiting = bool;
-        })
+    _setWidgetWaitingState(user, bool, wait = 0) {
+        clearTimeout(this._setWidgetWaitingStateTimeout);
+        if (wait > 0) {
+            this._setWidgetWaitingStateTimeout = setTimeout(() => {
+                this._setWidgetWaitingState(user, bool);
+            }, wait)
+        } else {
+            let k = "_waitingState"+user;
+            if (this[k] !== bool) {
+                this[k] = bool;
+                console.log("Setting waiting state for", user, "to", bool);
+                this._allWidgets.forEach(w => {
+                    w[user].waiting = bool;
+                })
+            }
+        }
     }
 
     /**
@@ -214,6 +226,8 @@ export default class VideoCall extends Features {
 
 
     _setWidgetVisibility(user, isVisible) {
+
+        console.log((!isVisible ? "Clearing" : "Showing") + " widgets for user", user);
         this._allWidgets.forEach(w => {
             w.toggleUserVideoDisplay(user, isVisible);
         })
@@ -227,8 +241,10 @@ export default class VideoCall extends Features {
     _onWebRTCState(state) {
         let stream = state.remoteStream;
         if (state.isRemoteStreamReady) {
-            this._setUserStream(stream, this.sdata.them)
-            this._setWidgetVisibility(this.sdata.them, true);
+            this._setUserStream(stream, this.sdata.them);
+            this._setWidgetWaitingState(this.sdata.them, false);
+        } else {
+            this._setWidgetWaitingState(this.sdata.them, true, 1500);
         }
     }
 
@@ -335,18 +351,30 @@ export default class VideoCall extends Features {
 
     async _onUserLeft(){
         this._setWidgetWaitingState(this.sdata.them, true);
-        setTimeout(() => {
+        clearTimeout(this._onUserLeftTimeout);
+        this._onUserLeftTimeout = setTimeout(() => {
             if (!this.sdata.isUserActive(this.sdata.them)) {
                 this._clearWidgets(this.sdata.them);
             }
         }, 5000);
     }
 
+    async _onUserJoined(){
+        clearTimeout(this._onUserLeftTimeout);
+        this._setWidgetVisibility(this.sdata.them, true);
+    }
+
+
+
+
     /**
      * Sets the volume for all video elements
      * @param {number} value - 0 to 100
      */
     _setVolume(value){
+        if (typeof value !== "number" || Number.isNaN(value) || value < 0) {
+            value = 75;
+        }
         value = value / 100; // convert to 0-1 rang
         for (const user in this.videos) {
             this.videos[user].volume = value;
@@ -373,9 +401,6 @@ export default class VideoCall extends Features {
                 this._setWidgetUserImage(presets.image, "host");
             }
 
-            // set the participant's name and image
-            this._setWidgetUserName(this.session.settings.get("participant/profileSettings/name"), "participant");
-            this._setWidgetUserImage(this.session.settings.get("participant/profileSettings/image"), "participant");
 
             // get new stream from webcam
             let stream = getStream(2);
@@ -413,24 +438,15 @@ export default class VideoCall extends Features {
                 }
             ])
             
-        
-            // listen to profile settings changes
-            this.session.settings.addEventListener("change", (e) => {
-                let {user, group, setting, value, path} = e;
-                if (user == this.sdata.me) {
-                    if (group == "volume" && setting == "level") {
-                        this._setVolume(value);
-                    }
-                } 
-                
-                if (path == "participant/profileSettings/name") {
-                        this._setWidgetUserName(value, "participant");
-                }
-
-                if (path == "participant/profileSettings/image") {
-                        this._setWidgetUserImage(value, "participant");
-                }
-            });
+            this.session.settings.onValue(`${this.sdata.me}/volume/level`, (value) => {
+                this._setVolume(value);
+            })
+            this.session.settings.onValue("participant/profileSettings/name", (value) => {
+                this._setWidgetUserName(value, "participant");
+            })
+            this.session.settings.onValue("participant/profileSettings/image", (value) => {
+                this._setWidgetUserImage(value, "participant");
+            })
 
 
             // Listen to changes in audio output device and update sinkId accordingly
@@ -452,7 +468,13 @@ export default class VideoCall extends Features {
                 }
             })
 
-            this._setVolume(this.session.settings.get(`${this.sdata.me}/volume/level`));
+            this.sdata.onUser("joined", (key) => {
+                if (key == this.sdata.them) {
+                    this._onUserJoined();
+                    this._setWidgetWaitingState(this.sdata.them, true);
+                }
+            });
+
 
             this._setWidgetVisibility(this.sdata.me, true);
         } else {

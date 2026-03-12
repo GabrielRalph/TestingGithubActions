@@ -372,6 +372,7 @@ class SettingsWindow extends OccupiableWindow {
     }
 
     async close(){
+        this.dispatchEvent(new CustomEvent("exit"))
         await this.hide(400)
     }
 
@@ -381,8 +382,6 @@ class SettingsWindow extends OccupiableWindow {
 
     static get fixToolBarWhenOpen(){return true; }
 }
-
-
 
 
 export default class SettingsFeature extends Features {
@@ -396,7 +395,7 @@ export default class SettingsFeature extends Features {
             index: 35,
             onSelect: async e => e.waitFor(this._openSettingsAtHome()),
         })
- 
+
 
         // Listen to settings icon clicks in the settings window and handle navigation and actions
         this.settingsWindow.events = {
@@ -408,26 +407,22 @@ export default class SettingsFeature extends Features {
                     e.preventDefault();
                     await e.waitFor(session.openWindow(this._openPageOnBack));
                 }
-                this._openPageOnBack = null;
-                this.sdata.set("openPageOnBack", null); 
+
+                if (e.icon?.action === "home" || e.icon?.action === "back" || e.icon?.action === "exit") {
+                    this._openPageOnBack = null;
+                    this.sdata.set("openPageOnBack", null); 
+                }
             },
             "path-change": () => {
                 this.sdata.set("path", this.settingsWindow.history);
-            }
+            },
+            "exit": (e) => this.dispatchEvent(e)
         }
 
+        this._pathListeners = {};
+
         // Listen to changes in settings values and update the settings window accordingly
-        Settings.addChangeListener((name, value) => {
-            this.settingsWindow.updateSettings();
-            const event = new Event("change", {bubbles: true});
-            event.path = name;
-            let [user, type, setting] = name.split("/");
-            event.user = user;
-            event.group = type;
-            event.setting = setting;
-            event.value = value;    
-            this.dispatchEvent(event);
-        });
+        Settings.addChangeListener(this._onSettingsChange.bind(this));
     }
 
     
@@ -510,6 +505,9 @@ export default class SettingsFeature extends Features {
     chooseProfile(profileID) {
         if (this.sdata.me === "host") {
             this.sdata.set("profileID", profileID);
+            if (profileID === null) {
+                profileID = "default";
+            }
             this.sdata.logChange("settings.profile", {value: profileID});
         }
     }
@@ -520,6 +518,26 @@ export default class SettingsFeature extends Features {
             id = await Settings.createProfile(this.sdata.hostUID, name);
         }
         return id;
+    }
+
+    onValue(path, callback) {
+        if (callback instanceof Function && typeof path === "string") {
+
+            if (path in this._pathListeners) {
+                this._pathListeners[path].push(callback);
+            } else {
+                this._pathListeners[path] = [callback];
+            }
+
+            // Check to see if that setting currently exists
+            // if it does, call the callback with the current 
+            // value so that the listener is up to date immediately
+
+            let value = Settings.getValue(path);
+            if (value !== undefined) {
+                callback(value);
+            }
+        }
     }
 
     /**
@@ -545,6 +563,22 @@ export default class SettingsFeature extends Features {
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ PRIVATE ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
+    _onSettingsChange(name, value) {
+        this.settingsWindow.updateSettings();
+        if (name in this._pathListeners) {
+            this._pathListeners[name].forEach(callback => callback(value));
+        }
+
+        const event = new Event("change", {bubbles: true});
+        event.path = name;
+        let [user, type, setting] = name.split("/");
+        event.user = user;
+        event.group = type;
+        event.setting = setting;
+        event.value = value;    
+        this.dispatchEvent(event);
+    }
+
     async _openSettingsAtHome() {
         await this.sdata.set("path", ["home"]);
         await this.session.openWindow("settings");
@@ -563,15 +597,29 @@ export default class SettingsFeature extends Features {
     }
 
     async initialise() {
-        let hostUID = this.sdata.hostUID;
-        await Settings.initialise(hostUID),
+       let hostUID = this.sdata.hostUID;
+       
+       // Wait for the profileID to be loaded from firebase, 
+       // then initialise the settings with that profileID
+       let initS = false;
+       let pid = await new Promise(r => {
+            this.sdata.onValue("profileID", (profileID) => {
+                if (!initS) {
+                    r(profileID);
+                    initS = true;
+                } else {
+                    Settings.chooseProfile(profileID);
+                }
+            });
+        });
+        await Settings.initialise(hostUID, pid);
 
-        
+        // Set the settings layout in the settings window        
         this.settingsWindow.settingsLayout = SettingsFeature.SettingsLayout;
 
-        // Whatch profiles if host.
+        // Watch profiles if host.
         if (this.sdata.me === "host") {
-            Settings.watchProfiles(hostUID, (profiles) => {
+            Settings.watchProfiles(hostUID, () => {
                 this.dispatchEvent( new Event("profiles-change"))
             });
         }
@@ -586,13 +634,9 @@ export default class SettingsFeature extends Features {
             this._openPath = path;
         });
 
+        // Listen to openPageOnBack changes
         this.sdata.onValue("openPageOnBack", (page) => {
             this._openPageOnBack = page;
-        });
-
-        // Listen to profile changes
-        this.sdata.onValue("profileID", (profileID) => {
-            Settings.chooseProfile(profileID);
         });
 
 
@@ -604,14 +648,15 @@ export default class SettingsFeature extends Features {
         });
 
 
-        // Set the current devices initially in firebase
-        this.sdata.set("devices/"+this.sdata.me, await getDevices(true));
-
         this.lastTheirDevices = {
             audioinput: {},
             audiooutput: {},
             videoinput: {},
         }
+        
+        // Set the current devices initially in firebase
+        this.sdata.set("devices/"+this.sdata.me, await getDevices(true));
+
         // Listen to the other users device changes in the firebase
         this.sdata.onValue("devices/"+this.sdata.them, (devices) => {
             if (devices === null) {

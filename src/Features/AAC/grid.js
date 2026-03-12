@@ -120,17 +120,17 @@ class Grid extends SvgPlus {
      */
     selectIcon(pos, idx, e){
         /** Un highlight last selected icon */
-        if (this.lastSelected) {
-            let [r, c] = this.lastSelected;
-            this.cells[r][c].hover = false;
-        }
+        // if (this.lastSelected) {
+            // let [r, c] = this.lastSelected;
+            // this.cells[r][c].hover = false;
+        // }
 
         /** If new selected icon */
         if (pos) {
             // Highlight that icon
             let [r, c] = pos;
             let cell = this.cells[r][c];
-            cell.hover = true;
+            // cell.hover = true;
 
             // Dispatch event with details of icon selection
             if (typeof idx === "number") {

@@ -181,6 +181,7 @@ export class HideShowTransition extends SvgPlus {
      * @return {Promise<void>}
      */
     async toggle(isShow, time) {
+      isShow = !!isShow;
       // Only run if state is changing
       if (isShow !== this._shown) {
         // Update shown state immediately
@@ -188,6 +189,8 @@ export class HideShowTransition extends SvgPlus {
 
         // Ensure element is visible before animating
         this.styles = this.intermediateStyle;
+        
+        void this.offsetWidth;// /x/ Force reflow to apply styles
 
         // If time is 0 set styles immediately otherwise animate
         let isCanceled = false;

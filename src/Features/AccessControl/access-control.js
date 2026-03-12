@@ -1,5 +1,5 @@
 import { SvgPlus, Vector } from "../../SvgPlus/4.js";
-import { AccessButton, getButtonAtPoint, getButtonGroups } from "../../Utilities/Buttons/access-buttons.js";
+import { AccessButton, getButtonAtPoint, getButtonGroups, getButtonsInGroup } from "../../Utilities/Buttons/access-buttons.js";
 import { relURL, WaveStateVariable } from "../../Utilities/usefull-funcs.js";
 import { Features, SquidlyFeatureWindow } from "../features-interface.js";
 
@@ -244,6 +244,11 @@ function getSwitchButtonGroups() {
     return switchGroups;
 }
 
+function getSwitchButtonsInGroup(groupKey) {
+    let buttons = getButtonsInGroup(groupKey);
+    return buttons.filter(b => !b.disableSwitch);
+}
+
 export default class AccessControl extends Features {
     maxTransitionTimeMS = 500;
     constructor(sesh, sdata) {
@@ -399,6 +404,12 @@ export default class AccessControl extends Features {
                         // Get the new clickable access button groups
                         groups = getSwitchButtonGroups();
                         keys = Object.keys(groups);
+
+                        if (keys.length == 1) {
+                            selectedGroupName = keys[0];
+                            selectedGroup = groups[keys[0]];
+                            break;
+                        }
                     }
     
                 // Otherwise there is only one group so we will select that
@@ -416,17 +427,28 @@ export default class AccessControl extends Features {
                     // selected or the switching is ended.
                     while (!selectedButton && !quit) {
                         for (let button of selectedGroup) {
-                            selectedButton = await this.overlay.addSwichLoader(button)
-                            
-                            if (selectedButton !== false) {
-                                if (selectedButton === null) {
-                                    quit = true;
-                                } else if (selectedButton === "cancel") {
-                                    selectedButton = true;
+
+                            // check button is visible before allowing selection
+                            if (button.isVisible) {
+                                selectedButton = await this.overlay.addSwichLoader(button)
+                                
+                                if (selectedButton !== false) {
+                                    if (selectedButton === null) {
+                                        quit = true;
+                                    } else if (selectedButton === "cancel") {
+                                        selectedButton = true;
+                                    }
+                                    break;
                                 }
-                                break;
                             }
+
                         }
+
+                        selectedGroup = getSwitchButtonsInGroup(selectedGroupName); 
+                        if (selectedGroup.length == 0) {
+                            selectedButton = true;
+                            selectedGroup = null;
+                        }                  
                     }
                     
                     // If a button is selected then click that button. Hide the
@@ -498,17 +520,12 @@ export default class AccessControl extends Features {
 
     initialise(){
         this.session.eyeGaze.addEyeDataListener(this._onEyeData.bind(this));
-        this.session.settings.addEventListener("change", (e) => {
-            let path = e.path.split("/");
-            let [user, type, setting] = path;
-            if (user == this.sdata.me && type == "access") {
-                if (setting == "switchTime") {
-                    SwitchTime = e.value;
-                } else if (setting == "dwellTime") {
-                    DwellTime = e.value;
-                }
-            }
-        })
+        this.session.settings.onValue(`${this.sdata.me}/access/switchTime`, (value) => {
+            SwitchTime = value;
+        });
+        this.session.settings.onValue(`${this.sdata.me}/access/dwellTime`, (value) => {
+            DwellTime = value;
+        });
     }
 
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */

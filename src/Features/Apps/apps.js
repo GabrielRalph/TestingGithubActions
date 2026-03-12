@@ -36,7 +36,7 @@ class QuizSearch extends SearchWindow {
         app: q,
         icon: {
           symbol: q.icon,
-          type: "image",
+          type: "normal",
         },
       };
     });
@@ -72,6 +72,14 @@ class AppsFrame extends OccupiableWindow {
     });
   }
 
+
+  async enterSearchMode() {
+    this.search.reset(true);
+    await this.search.show();
+
+  }
+
+
   setGridSize(rows, cols) {
     rows = Math.max(1, Math.min(20, rows || 1));
     cols = Math.max(1, Math.min(20, cols || 1));
@@ -95,9 +103,7 @@ class AppsFrame extends OccupiableWindow {
           type: "action",
           events: {
             "access-click": async (e) => {
-              await this.feature.close();
-              // Release toolbar after closing
-              this.feature.session.openWindow("default");
+              e.waitFor(this.enterSearchMode());
             },
           },
         },
@@ -178,11 +184,40 @@ export default class Apps extends Features {
     if (!this.appDescriptors || this.appDescriptors.length === 0) {
       await this.loadAppDescriptors();
     }
-    await Promise.all([
-      this.appFrame.show(),
-      this.appFrame.search.reset(true),
-      this.appFrame.search.show(),
-    ]);
+    await this.appFrame.show();
+
+    // Check Firebase for an already-selected app (handles late-join scenario)
+    const selectedApp = await this.sdata.get("selected_app");
+    if (selectedApp) {
+      // App is already selected — load it directly, skip search
+      this.appFrame.search.hide();
+      const app = this.appDescriptors?.find(
+        (a) => a.url === selectedApp.app?.url,
+      );
+      if (app) {
+        this._setApp(app.index);
+        this.currentAppIndex = app.index;
+      } else if (
+        selectedApp.index >= 0 &&
+        selectedApp.index < this.appDescriptors.length
+      ) {
+        this._setApp(selectedApp.index);
+        this.currentAppIndex = selectedApp.index;
+      } else {
+        await this.appFrame.setSrc("about:blank");
+        await Promise.all([
+          this.appFrame.search.reset(true),
+          this.appFrame.search.show(),
+        ]);
+      }
+    } else {
+      // No app selected — show search as normal
+      await this.appFrame.setSrc("about:blank");
+      await Promise.all([
+        this.appFrame.search.reset(true),
+        this.appFrame.search.show(),
+      ]);
+    }
   }
 
   async close() {
@@ -804,6 +839,10 @@ export default class Apps extends Features {
       "../../Utilities/Buttons/access-buttons.js",
       import.meta,
     );
+    let gridIconStyles = relURL(
+      "../../Utilities/Buttons/grid-icon.css",
+      import.meta,
+    );
     this.appDescriptors = await Promise.all(
       AppsList.map(async (url) => {
         try {
@@ -836,7 +875,9 @@ export default class Apps extends Features {
             `<script type="module" src="${accessButtonsURL}"></script>`,
             `<script src="${apiURL}"></script>`,
             `<base href="${url}/">`,
-            `<script>window.session_info = ${safe_session_info};</script>`,
+            `<script>window.session_info = ${safe_session_info};</script>
+            <link rel="stylesheet" href="${gridIconStyles}">
+            `,
           ].join("\n\t");
 
           info.html = html.replace(/<head\b[^>]*>/, `$& \n\t${injection}`);

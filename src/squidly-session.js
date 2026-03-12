@@ -214,7 +214,7 @@ export class SessionDataFrame extends FirebaseFrame {
     } catch (e) {
       let stack = e.stack.split("\n").slice(1).map(line => line.indexOf("firebase-frame.js") !== -1).filter(a => a);
       if (stack.length > 0) {
-        throw "Log entries cannot be made from within a firebase callback. Please make log entries in response to a user event.";
+        console.warn("Log entries cannot be made from within a firebase callback. Please make log entries in response to a user event.");
       }
     }
 
@@ -363,7 +363,7 @@ export class SquidlySessionElement extends ShadowElement {
         this.toolBar.addSelectionListener("key", async (e) => {
           // Copy the key to clipboard
           try {
-            let link = "https://squidly.com.au/V3/?" + sessionConnection.sid;
+            let link = window.location + "";
             await navigator.clipboard.writeText(link);
             this.notifications.notify(
               "Session key copied to clipboard",
@@ -638,8 +638,11 @@ export class SquidlySessionElement extends ShadowElement {
     };
 
     // Watch for resize changes in the full aspect area
-    let observer = new ResizeObserver(() => {
-      let size = blank.bbox[1];
+    let observer = new ResizeObserver((e) => {
+      let size = new Vector(
+        e[0].contentRect.width,
+        e[0].contentRect.height
+      )
       aspects[me] = size;
       this.sdata.set(`aspect/${me}`, { x: size.x, y: size.y });
       chooseAspect();
@@ -672,35 +675,22 @@ export class SquidlySessionElement extends ShadowElement {
         this.togglePanel("topPanel", value == "topPanel");
       }
     };
-    this.settings.addEventListener("change", (e) => {
-      let { user, group, setting, value } = e;
-      if (user == this.sdata.me && group == "display" && setting == "layout") {
-        updateSidePanel(value);
-      }
 
-      if (user == this.sdata.me && group == "display" && setting == "font") {
-        this.sessionView.root.setAttribute("font", value);
-      }
-      if (user == this.sdata.me && group == "display" && setting == "effect") {
-        if (value == "none") {
-          this.sessionView.root.removeAttribute("effect");
-        } else {
-          this.sessionView.root.setAttribute("effect", value);
-        }
+    this.settings.onValue(`${this.sdata.me}/display/layout`, (value) => {
+      updateSidePanel(value);
+    });
+    this.settings.onValue(`${this.sdata.me}/display/font`, (value) => {
+      this.sessionView.root.setAttribute("font", value);
+    });
+    this.settings.onValue(`${this.sdata.me}/display/effect`, (value) => {
+      if (value == "none") {
+        this.sessionView.root.removeAttribute("effect");
+      } else {
+        this.sessionView.root.setAttribute("effect", value);
       }
     });
-    this.sessionView.root.setAttribute(
-      "font",
-      this.settings.get(`${this.sdata.me}/display/font`),
-    );
-    this.sessionView.root.setAttribute(
-      "effect",
-      this.settings.get(`${this.sdata.me}/display/effect`),
-    );
-    updateSidePanel(this.settings.get(`${this.sdata.me}/display/layout`));
 
     return new Promise((r) => {
-
       this.sdata.onValue("occupier", async (name) => {
         await this.openWindow(name);
         r();
@@ -746,7 +736,6 @@ export class SquidlySessionElement extends ShadowElement {
 
         // Create a copy of the event that can be dispatched to the occupier
         let keyboardElements = [this.currentOccupier, ...this.keyboardCaptureElements].filter((el) => el);
-        console.log("Dispatching key event to", keyboardElements);
         let isPrevented = false;
         for (let element of keyboardElements) {
           const event = copyEvent(e, "", {bubbles: false, cancelable: true});
@@ -775,9 +764,7 @@ export class SquidlySessionElement extends ShadowElement {
     });
   }
 
-
   initialiseEventForwarding() {
-    console.log("Initialising event forwarding for", this.eventCaptureElements);
     for (let eventName in this.eventCaptureElements) {
       window.addEventListener(eventName, (e) => {
         let elements = this.eventCaptureElements[eventName];
@@ -788,8 +775,6 @@ export class SquidlySessionElement extends ShadowElement {
       });
     }
   }
-
-
 
   set endlinkHost(link) {
     this["endlink-host"] = link;

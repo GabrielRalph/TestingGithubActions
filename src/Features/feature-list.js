@@ -6,9 +6,9 @@ import { relURL } from '../Utilities/usefull-funcs.js';
 /** @typedef {import('./Cursors/cursors.js').default} Cursors */
 /** @typedef {import('./EyeGaze/eye-gaze.js').default} EyeGazeFeature */
 /** @typedef {import('./Keyboard/keyboard.js').default} KeyboardFeature */
+/** @typedef {import('./AccessControl/access-control.js').default} AccessControl */
 /** @typedef {import('./Text2Speech/text2speech.js').default} Text2Speech */
 /** @typedef {import('./Notifications/notifications.js').default} Notifications */
-/** @typedef {import('./AccessControl/access-control.js').default} AccessControl */
 /** @typedef {import('./AAC/grid.js').default} AACGrid */
 /** @typedef {import('./AccessSetup/access-setup.js').default} AccessSetup */
 /** @typedef {import('./Apps/apps.js').default} Apps */
@@ -36,14 +36,14 @@ export class SquildyFeatureProxy {
 	/** @return {KeyboardFeature} */
 	get keyboard() { return this.getFeature("keyboard"); }
 
+	/** @return {AccessControl} */
+	get accessControl() { return this.getFeature("accessControl"); }
+
 	/** @return {Text2Speech} */
 	get text2speech() { return this.getFeature("text2speech"); }
 
 	/** @return {Notifications} */
 	get notifications() { return this.getFeature("notifications"); }
-
-	/** @return {AccessControl} */
-	get accessControl() { return this.getFeature("accessControl"); }
 
 	/** @return {AACGrid} */
 	get aacGrid() { return this.getFeature("aacGrid"); }
@@ -75,9 +75,9 @@ export const FeaturesList = [
 	[() => import("./Cursors/cursors.js"), "cursors"],
 	[() => import("./EyeGaze/eye-gaze.js"), "eyeGaze"],
 	[() => import("./Keyboard/keyboard.js"), "keyboard"],
+	[() => import("./AccessControl/access-control.js"), "accessControl"],
 	[() => import("./Text2Speech/text2speech.js"), "text2speech"],
 	[() => import("./Notifications/notifications.js"), "notifications"],
-	[() => import("./AccessControl/access-control.js"), "accessControl"],
 	[() => import("./AAC/grid.js"), "aacGrid"],
 	[() => import("./AccessSetup/access-setup.js"), "accessSetup"],
 	[() => import("./Apps/apps.js"), "apps"],

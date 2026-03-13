@@ -193,10 +193,12 @@
 
 /* Active state */
 
-.grid-icon:not([i-disable-active]):active {
+.grid-icon:not([i-disable-active]):active,
+.grid-icon:not([i-disable-active])[active] {
     transform: scale(0.97);
 }
-.grid-icon:not([i-disable-active]):active .for-active {
+.grid-icon:not([i-disable-active]):active .for-active,
+.grid-icon:not([i-disable-active])[active] .for-active {
     opacity: 1;
 }
 

@@ -1,9 +1,9 @@
 access-setup-starting-window {
-    width: 100%;
-    height: 100%;
+    width: calc(100% - 2 * var(--gap));
+    height: calc(100% - 2 * var(--gap));
     background-color: rgb(39, 38, 46);
     display: block;
-    
+    padding: var(--gap);
 }
 
 .grid-icon {

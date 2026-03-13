@@ -281,6 +281,7 @@ class AccessButtonRoot extends HTMLElement {
     async accessClick(mode, timeout) {
         const event = new AccessClickEvent(mode)
         this.dispatchEvent(event);
+        this.activeAnimation();
         await event.waitAll(timeout);
     }
 
@@ -318,6 +319,14 @@ class AccessButtonRoot extends HTMLElement {
         let root = this.hostedRoot;
         let proxy = this.clickBoxElement;
         return checkClickable(root, proxy, p)
+    }
+
+
+    activeAnimation(){
+        this.toggleAttribute("active", true);
+        setTimeout(() => {
+            this.toggleAttribute("active", false);
+        }, 200);
     }
 
 

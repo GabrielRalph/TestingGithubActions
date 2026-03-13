@@ -87,9 +87,9 @@ eyegaze:
 
     content: |
       <h4>Recommendations:</h4>
-      <p> 👶 Young learners → 1.2 </p>
-      <p> 🧭 Extra support → 1.5 </p>
-      <p> 🎯 Independent use → 0.9 </p>
+      <p> 👶 Young learners → 1-1.5s </p>
+      <p> 🧭 Extra support → 1.5-2s </p>
+      <p> 🎯 Independent use → 0.7-1.2s </p>
     shownAreas: [[[2,2],[0,2]]]
     modalArea: [[0,1],[0,2]]
     dwellTestArea: [[3,3],[0,2]]
@@ -136,9 +136,9 @@ switch:
 
     content: |
       <h4>Recommendations:</h4>
-      <p> 👶 Young learners → 1-2 </p>
-      <p> 🧭 Extra support → 2-3 </p>
-      <p> 🎯 Independent use → 0.7-1 </p>
+      <p> 👶 Young learners → 1-2s </p>
+      <p> 🧭 Extra support → 2-3s </p>
+      <p> 🎯 Independent use → 0.7-1s </p>
     shownAreas: [[[1,1],[0,2]]]
     modalArea: [[2,3],[0,2]]
     dwellTestArea: [[0,0],[0,2]]
@@ -175,7 +175,6 @@ switch:
       <ul>
         <li>Press <b>"space"</b> on your keyboard to select an option.</li>
         <li>Press <b>"backspace"</b> to return from a button group.</li>
-        <li>Press <b>"esc"</b>, <b>"x"</b> or click anywhere to end switch.</li>
       </ul>
 
     shownAreas: [[[1,1],[0,2]]]

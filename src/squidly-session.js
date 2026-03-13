@@ -408,6 +408,9 @@ export class SquidlySessionElement extends ShadowElement {
           ? this.toolBar.toggleToolBar(false)
           : null,
 
+        nextOccupier != null ? 
+          this.toolBar.toggleRingBar(false) : null,
+
         nextOccupier != null
           ? this.togglePanel(this.panelMode, true)
           : this.togglePanel(this.panelMode, false),

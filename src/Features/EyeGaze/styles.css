@@ -104,7 +104,7 @@ feedback-frame {
     /* height: 66.666%; */
     background:#156082;
     border: 3px solid #079ddb;
-    border-radius:2em;
+    border-radius: 1.5vmin;
     overflow: hidden;
     display: flex;
 }

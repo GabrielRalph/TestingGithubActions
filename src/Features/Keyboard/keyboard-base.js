@@ -136,7 +136,7 @@ export class KeyboardIcon extends GridIcon {
             "close": {
                 displayValue: "Close",
                 type: "action",
-                symbol: "close",
+                symbol: "downArrow",
             },
             "enter": {
                 displayValue: "Enter",

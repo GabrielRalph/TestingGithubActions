@@ -1,5 +1,5 @@
 import { OccupiableWindow } from "../features-interface.js";
-import { GridIcon, GridLayout, GridIconSymbol } from "../../Utilities/Buttons/grid-icon.js";
+import { GridIcon, GridLayout } from "../../Utilities/Buttons/grid-icon.js";
 import { relURL } from "../../Utilities/usefull-funcs.js";
 import { MaskOverlay } from "./mask-overlay.js";
 import { AccessButton, AccessEvent } from "../../Utilities/Buttons/access-buttons.js";

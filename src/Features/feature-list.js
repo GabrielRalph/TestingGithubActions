@@ -5,16 +5,16 @@ import { relURL } from '../Utilities/usefull-funcs.js';
 /** @typedef {import('./VideoCall/video-call.js').default} VideoCall */
 /** @typedef {import('./Cursors/cursors.js').default} Cursors */
 /** @typedef {import('./EyeGaze/eye-gaze.js').default} EyeGazeFeature */
-/** @typedef {import('./Text2Speech/text2speech.js').default} Text2Speech */
 /** @typedef {import('./Keyboard/keyboard.js').default} KeyboardFeature */
+/** @typedef {import('./Text2Speech/text2speech.js').default} Text2Speech */
 /** @typedef {import('./Notifications/notifications.js').default} Notifications */
 /** @typedef {import('./AccessControl/access-control.js').default} AccessControl */
 /** @typedef {import('./AAC/grid.js').default} AACGrid */
+/** @typedef {import('./AccessSetup/access-setup.js').default} AccessSetup */
 /** @typedef {import('./Apps/apps.js').default} Apps */
 /** @typedef {import('./Chat/chat.js').default} ChatFeature */
 /** @typedef {import('./Quiz/quiz.js').default} QuizFeature */
 /** @typedef {import('./ShareContent/share-content.js').default} ShareContent */
-/** @typedef {import('./WalkThrough/walk-through.js').default} WalkThroughFeature */
 
 export class SquildyFeatureProxy {
 
@@ -33,11 +33,11 @@ export class SquildyFeatureProxy {
 	/** @return {EyeGazeFeature} */
 	get eyeGaze() { return this.getFeature("eyeGaze"); }
 
-	/** @return {Text2Speech} */
-	get text2speech() { return this.getFeature("text2speech"); }
-
 	/** @return {KeyboardFeature} */
 	get keyboard() { return this.getFeature("keyboard"); }
+
+	/** @return {Text2Speech} */
+	get text2speech() { return this.getFeature("text2speech"); }
 
 	/** @return {Notifications} */
 	get notifications() { return this.getFeature("notifications"); }
@@ -47,6 +47,9 @@ export class SquildyFeatureProxy {
 
 	/** @return {AACGrid} */
 	get aacGrid() { return this.getFeature("aacGrid"); }
+
+	/** @return {AccessSetup} */
+	get accessSetup() { return this.getFeature("accessSetup"); }
 
 	/** @return {Apps} */
 	get apps() { return this.getFeature("apps"); }
@@ -60,9 +63,6 @@ export class SquildyFeatureProxy {
 	/** @return {ShareContent} */
 	get shareContent() { return this.getFeature("shareContent"); }
 
-	/** @return {WalkThroughFeature} */
-	get walkThrough() { return this.getFeature("walkThrough"); }
-
 	/** @override */
 	getFeature() { }
 
@@ -74,14 +74,14 @@ export const FeaturesList = [
 	[() => import("./VideoCall/video-call.js"), "videoCall"],
 	[() => import("./Cursors/cursors.js"), "cursors"],
 	[() => import("./EyeGaze/eye-gaze.js"), "eyeGaze"],
-	[() => import("./Text2Speech/text2speech.js"), "text2speech"],
 	[() => import("./Keyboard/keyboard.js"), "keyboard"],
+	[() => import("./Text2Speech/text2speech.js"), "text2speech"],
 	[() => import("./Notifications/notifications.js"), "notifications"],
 	[() => import("./AccessControl/access-control.js"), "accessControl"],
 	[() => import("./AAC/grid.js"), "aacGrid"],
+	[() => import("./AccessSetup/access-setup.js"), "accessSetup"],
 	[() => import("./Apps/apps.js"), "apps"],
 	[() => import("./Chat/chat.js"), "chat"],
 	[() => import("./Quiz/quiz.js"), "quiz"],
-	[() => import("./ShareContent/share-content.js"), "shareContent"],
-	[() => import("./WalkThrough/walk-through.js"), "walkThrough"]
+	[() => import("./ShareContent/share-content.js"), "shareContent"]
 ];

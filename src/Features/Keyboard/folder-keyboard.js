@@ -150,7 +150,7 @@ export class FolderKeyboard extends KeyboardLayout {
         this._page = "main";
         this.updateSuggestions();
         this.closeIcon.displayValue = "close";
-        this.closeIcon.symbol = "close";
+        this.closeIcon.symbol = "downArrow";
         await this.rotater.setContent(this.main);
     }
 

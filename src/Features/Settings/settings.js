@@ -384,7 +384,36 @@ class SettingsWindow extends OccupiableWindow {
 }
 
 
+/**
+ * @fires SettingsFeature#change
+ * @fires SettingsFeature#profiles-change
+ * @fires SettingsFeature#exit
+ */
 export default class SettingsFeature extends Features {
+    
+    /**
+     * Fired when a settings value changes.
+     * @event SettingsFeature#change
+     * @type {Event}
+     * @property {string} path - The full settings path that changed (e.g. "host/volume/level")
+     * @property {string} user - The user the setting belongs to ("host" or "participant")
+     * @property {string} group - The settings group (e.g. "volume")
+     * @property {string} setting - The specific setting key (e.g. "level")
+     * @property {*} value - The new value
+     */
+
+    /**
+     * Fired when the list of profiles changes.
+     * @event SettingsFeature#profiles-change
+     * @type {Event}
+     */
+
+    /**
+     * Fired when the settings window is closed.
+     * @event SettingsFeature#exit
+     * @type {Event}
+     */
+    
     constructor(session, sdata) {
         super(session, sdata);
         this.settingsWindow = new SettingsWindow(this);
@@ -550,14 +579,24 @@ export default class SettingsFeature extends Features {
         this.sdata.set("openPageOnBack", page);
     }
 
+    /**
+     * @return {{profileID: string, name: string, image: string}[]} An array of profile objects containing the profileID and name of each profile.
+     */
     get profiles() {
         let profiles = Settings.getProfiles();
-        return profiles;
+        return [...profiles, {name: "default", profileID: "default", image: null}];
     }
     
     get openPath() {
-        return this._openPath.join("/");
+        return (this._openPath || []).join("/");
     }
+
+
+    /**
+     * @param {"change"|"profiles-change"|"exit"} type
+     * @param {EventListener} callback
+     */
+    addEventListener(type, callback) { super.addEventListener(type, callback); }
 
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ PRIVATE ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */

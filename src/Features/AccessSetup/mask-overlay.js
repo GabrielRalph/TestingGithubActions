@@ -32,8 +32,26 @@ export class MaskOverlay extends SvgResize {
         // Define areas to cut out of the mask
         this._areas = [];
 
+        const defs = this.createChild("defs");
+        
+        const id = "overlay-clip-" + Math.random().toString(16).slice(2);
+        const clip = defs.createChild("clipPath", {id});
+
         // Create the path element for the mask
-        this.path = this.createChild("path");
+        this.path = clip.createChild("path", { fill: "black" });
+
+        // foreignObject covers full SVG, clipped to the hole shapes
+        this.createChild("foreignObject", {
+            x: 0, y: 0, width: "100%", height: "100%",
+            "clip-path": `url(#${id})`
+        }).createChild("div", {
+            style: {
+                width: "100%",
+                height: "100%",
+                "backdrop-filter": "blur(12px) saturate(1.6) brightness(1.1)",
+                background: "rgba(255,255,255,0.08)"
+            }
+        });
 
         // Add the renderMask function to the drawables
         this.addDrawable({draw: this.renderMask.bind(this)});
@@ -80,6 +98,13 @@ export class MaskOverlay extends SvgResize {
     get areas() {
         const {W, H} = this;
         return this._areas.map(area => area instanceof Function ? area(W, H) : area);
+    }
+
+    set areas(areas) {
+        if (Array.isArray(areas)) {
+            this._areas = areas.filter(area => area instanceof Function || typeof area === "object");
+            this.renderMask();
+        }
     }
 
     /**

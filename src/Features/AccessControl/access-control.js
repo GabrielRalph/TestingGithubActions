@@ -39,12 +39,13 @@ class CircleLoader extends SvgPlus {
         this.wsv = new WaveStateVariable(false, 1.1, (t, goal) => {
             this.progress = t;
             position = button.getCenter();
-            this.styles = {
-                top: position.y + "px",
-                left: position.x + "px",
-            }
-            if (t == goal) {
-                this.dispatchEvent(new Event("state-change"))
+            if (position.x == 0 && position.y == 0 && this.wsv) {
+                this.pause();
+            } else {
+                this.styles = {
+                    top: position.y + "px",
+                    left: position.x + "px",
+                }
             }
         })
 

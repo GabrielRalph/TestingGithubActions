@@ -1184,9 +1184,9 @@ export default class WalkThroughFeature extends Features {
         SetUpWindow.loadStyleSheets();
     }
 
-    static get name() {
-        return "walkThrough"
-    }
+    // static get name() {
+    //     return "walkThrough"
+    // }
 
     static get layers() {
         return {

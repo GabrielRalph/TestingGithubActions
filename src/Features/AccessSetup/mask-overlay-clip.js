@@ -1,5 +1,7 @@
+import { SvgPlus } from "../../SvgPlus/4.js";
 import { Vector } from "../../SvgPlus/vector.js";
 import { SvgResize } from "../../Utilities/svg-resize.js";
+import { delay } from "../../Utilities/usefull-funcs.js";
 
 /**
  *  This is an example module, here I extend the SvgResize class to create
@@ -26,17 +28,35 @@ import { SvgResize } from "../../Utilities/svg-resize.js";
  * @extends SvgResize
  * @see SvgResize
  */
-export class MaskOverlay extends SvgResize {
+export class MaskOverlay extends SvgPlus {
     constructor() {
-        super();
+        super("mask-overlay");
         // Define areas to cut out of the mask
         this._areas = [];
 
-        // Create the path element for the mask
-        this.path = this.createChild("path", { fill: "black" });
+        this._resizeObserver = new ResizeObserver((e) => this.resize(e));
+        this._resizeObserver.observe(this);
+    }
 
-        // Add the renderMask function to the drawables
-        this.addDrawable({draw: this.renderMask.bind(this)});
+    stop() {
+        this._rendering = false;
+    }
+
+    async start() {
+        if (this._rendering) return;
+        this._rendering = true;
+        while (this._rendering) {
+            this.renderMask();
+            await delay();
+        }
+    }
+
+
+    resize(e) {
+        const {width, height} = e[0].contentRect;
+        this.W = width;
+        this.H = height;
+        if (!this._rendering) this.renderMask();
     }
 
 
@@ -49,6 +69,7 @@ export class MaskOverlay extends SvgResize {
         if (area instanceof Function || typeof area === "object") {
             this._areas.push(area);
         }
+        this.renderMask();
     }
 
 
@@ -61,6 +82,7 @@ export class MaskOverlay extends SvgResize {
         if (index !== -1) {
             this._areas.splice(index, 1);
         }
+        this.renderMask();
     }
 
 
@@ -69,6 +91,7 @@ export class MaskOverlay extends SvgResize {
      */
     clearAreas() {
         this._areas = [];
+        this.renderMask();
     }
 
 
@@ -80,6 +103,18 @@ export class MaskOverlay extends SvgResize {
     get areas() {
         const {W, H} = this;
         return this._areas.map(area => area instanceof Function ? area(W, H) : area);
+    }
+
+    /**
+     * Sets the areas to cut out of the mask. Each area can be a static object or a function that returns an object.
+     * @param {Array<MaskArea|MaskAreaFunction>} areas - The areas to cut out.
+     *  
+     */
+    set areas(areas) {
+        if (Array.isArray(areas)) {
+            this._areas = areas.filter(area => area instanceof Function || typeof area === "object");
+            this.renderMask();
+        }
     }
 
     /**
@@ -100,7 +135,11 @@ export class MaskOverlay extends SvgResize {
         );
         
         // Combine paths
-        this.path.setAttribute("d", d + paths.join(" "));
+        const clipPath = d + paths.join(" ");
+
+        this.styles = {
+            "clip-path": `path('${clipPath}')`
+        }
     }
 
 

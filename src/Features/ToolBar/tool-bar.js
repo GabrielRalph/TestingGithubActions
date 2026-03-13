@@ -6,6 +6,10 @@ import { Menu } from "./menu.js";
 import { Vector } from "../../SvgPlus/vector.js";
 
 /**
+ * @typedef {import("./menu.js").MenuItemOptions} MenuItemOptions
+ */
+
+/**
  * @type {[IconsDescription]}
  */
 const MENU_DEFAULT = [
@@ -293,6 +297,7 @@ export default class ToolBarFeature extends Features {
             toolBar: {
                 type: "panel",
                 area: "tools",
+                index: 250
             },
             toolBarRing: {
                 type: "area",

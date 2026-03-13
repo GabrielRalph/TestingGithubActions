@@ -151,6 +151,33 @@ export default class KeyboardFeature extends Features {
     }
 
 
+    /**
+     * Brings up the keyboard and waits for the user to input a value and close the keyboard, then returns the value.
+     * @param {string} value the value to set the keyboard to when it is opened.
+     * @returns {Promise<string>} a promise that resolves to the value of the keyboard when it is closed.
+     */
+    async getInput(value = "", accessEvent = null) {
+        this.value = value;
+
+        if (accessEvent) {
+            accessEvent.waitFor(this.keyboard.root.show());
+        } else {
+            await this.keyboard.root.show();
+        }
+        await new Promise((resolve) => {
+            const onClose = () => {
+                resolve();
+                this.keyboard.root.removeEventListener("close", onClose);
+            }
+            this.keyboard.root.addEventListener("close", onClose);
+        })
+
+        return this.value;
+    }
+
+
+
+
     async initialise() {
        
     }

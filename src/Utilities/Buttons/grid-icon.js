@@ -466,6 +466,9 @@ export class GridIcon extends GridCard {
     }
 }
 
+/**
+ * @typedef { [number, number] | [number, number, number, number] | [[number,number],[number,number]] } PositionArgs
+ */
 
 function parseCellPosition(rowStart, colStart, rowEnd = rowStart, colEnd = colStart) {
     if (Array.isArray(rowStart) && rowStart.length === 2) {
@@ -518,14 +521,13 @@ export class GridLayout extends SvgPlus {
 
 
     /**
-     * Adds an item to the grid at the specified row and column.
-     * @param {GridIcon|SvgPlus} item - The item to add to the grid.
-     * @param {number} row - The starting row index (0-based).
-     * @param {number} col - The starting column index (0-based).
-     * @param {number} [rowEnd] - The ending row index (0-based, inclusive).
-     * @param {number} [colEnd] - The ending column index (0-based, inclusive).
+     * @template {ItemType extends SvgPlus} ItemType
      * 
-     * @returns {GridIcon|SvgPlus} The added item.
+     * Adds an item to the grid at the specified row and column.
+     * @param {ItemType} item - The item to add to the grid.
+     * @param {PositionArgs} posArgs - The position arguments specifying the row and column to place the item.
+     * 
+     * @returns {ItemType} The added item.
      */
     add(item, ...posArgs) {
         let [row, col, rowEnd, colEnd] = parseCellPosition(...posArgs);
@@ -543,6 +545,14 @@ export class GridLayout extends SvgPlus {
         return item;
     }
 
+    /** Creates a child SvgPlus element, sets its properties and appends it to itself
+     * @template {IType extends SvgPlus} IType
+     * @param {new (...args: any[]) => IType} classDef class definition of the instances to add.
+     * @param {ConstructorParameters<new (...args: any[]) => IType>} item the parameter of the class constructor.
+     * @param {PositionArgs} posArgs position arguments specifying the row and column to place the item, same as in add().
+     * 
+     * @returns {IType} The added item.
+   */
     addItemInstance(classDef, item, ...posArgs) {
         let instance = new classDef(item);
         return this.add(instance, ...posArgs);
@@ -551,10 +561,8 @@ export class GridLayout extends SvgPlus {
     /**
      * Adds a GridIcon to the grid at the specified row and column.
      * @param {GridIconOptions} item - The options for the GridIcon to add.
-     * @param {number} row - The starting row index (0-based).
-     * @param {number} col - The starting column index (0-based).
-     * @param {number} [rowEnd] - The ending row index (0-based, inclusive).
-     * @param {number} [colEnd] - The ending column index (0-based, inclusive).
+     * @param {PositionArgs} posArgs - The position arguments specifying the row and column to place the item, same as in add().
+     * @return {GridIcon} The added GridIcon.
      */
     addGridIcon(item, ...posArgs) {
         const gridIcon = new GridIcon(item);
@@ -563,13 +571,13 @@ export class GridLayout extends SvgPlus {
 
 
     /**
+     * @template {SvgPlus[]|SvgPlus[][]} Items
      * Adds multiple items to the grid at the specified starting row and column.
      * The items can be provided as a 2D array, where each sub-array represents a row of items.
-     * @param {SvgPlus[][]|SvgPlus[]} items - A 2D array of GridIcon options or a flat array of GridIcon options.
-     * @param {number} rowStart - The starting row index (0-based).
-     * @param {number} colStart - The starting column index (0-based).
-     * @param {number} [rowEnd] - The ending row index (0-based, inclusive).
-     * @param {number} [colEnd] - The ending column index (0-based, inclusive).
+     * @param {Items} items - A 2D array of SvgPlus items or a flat array of SvgPlus items.
+     * @param {PositionArgs} posArgs - The position arguments specifying the row and column to place the items, same as in add().
+     * 
+     * @returns {Items} The added items.
      */
     addItems(items, ...posArgs) {
         if (Array.isArray(items)) {
@@ -596,15 +604,27 @@ export class GridLayout extends SvgPlus {
         return items;
     }
 
-    /**
-     * Adds multiple GridIcons to the grid at the specified starting row and column.
+    /** Creates a child SvgPlus element, sets its properties and appends it to itself
+     * @template {IType extends SvgPlus} IType
+     * @param {new (...args: any[]) => IType} classDef class definition of the instances to add.
+     * @param {any[] | any[][] } args the first parameter of the class constructor for each instance to create, can be a 2D array where each sub-array represents a row of items.
+     * @param {PositionArgs} posArgs position arguments specifying the row and column to place the items, same as in add().
+     * 
+     * @returns {IType[][]}
+     * 
+     * Adds multiple instances of a class to the grid at the specified starting row and column.
      * The items can be provided as a 2D array, where each sub-array represents a row of items.
-     * @param { import("../../SvgPlus/4.js").SvgPlusClass } classDef - The class definition to use for creating the items (e.g., GridIcon).
-     * @param {any[][]|any[]} items - A 2D array of GridIcon options or a flat array of GridIcon options.
-     * @param {number} rowStart - The starting row index (0-based).
-     * @param {number} colStart - The starting column index (0-based).
-     * @param {number} [rowEnd] - The ending row index (0-based, inclusive).
-     * @param {number} [colEnd] - The ending column index (0-based, inclusive).
+     * @overload
+     * @param {new (...args: any[]) => IType} classDef class definition of the instances to add.
+     * @param {any[]  } args the first parameter of the class constructor
+     * @param {PositionArgs} posArgs position arguments specifying the row and column to place the items, same as in add().
+     * @returns {IType[]}
+     * 
+     * @overload
+     * @param {new (...args: any[]) => IType} classDef class definition of the instances to add.
+     * @param {any[][]} args the first parameter of the class constructor for each instance to create, can be a 2D array where each sub-array represents a row of items.
+     * @param {PositionArgs} posArgs position arguments specifying the row and column to place the items, same as in add().
+     * @returns {IType[][]}
      */
     addItemInstances(classDef, items, ...posArgs) {
         let instances = items.map((item, r) => {
@@ -623,10 +643,18 @@ export class GridLayout extends SvgPlus {
      * Adds multiple GridIcons to the grid at the specified starting row and column.
      * The items can be provided as a 2D array, where each sub-array represents a row of items.
      * @param {GridIconOptions[][]|GridIconOptions[]} items - A 2D array of GridIcon options or a flat array of GridIcon options.
-     * @param {number} rowStart - The starting row index (0-based).
-     * @param {number} colStart - The starting column index (0-based).
-     * @param {number} [rowEnd] - The ending row index (0-based, inclusive).
-     * @param {number} [colEnd] - The ending column index (0-based, inclusive).
+     * @param {PositionArgs} posArgs - The position arguments specifying the row and column to place the items, same as in add().
+     * @return {GridIcon[][]|GridIcon[]} The added GridIcons.
+     * 
+     * @overload
+     * @param {GridIconOptions[]} items - A flat array of GridIcon options.
+     * @param {PositionArgs} posArgs - The position arguments specifying the row and column to place the items, same as in add().
+     * @return {GridIcon[]} The added GridIcons.
+     * 
+     * @overload
+     * @param {GridIconOptions[][]} items - A 2D array of GridIcon options, where each sub-array represents a row of items.
+     * @param {PositionArgs} posArgs - The position arguments specifying the row and column to place the items, same as in add().
+     * @return {GridIcon[][]} The added GridIcons.
      */
     addGridIcons(items, ...posArgs) {
         return this.addItemInstances(GridIcon, items, ...posArgs);

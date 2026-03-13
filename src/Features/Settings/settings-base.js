@@ -409,6 +409,7 @@ class Setting {
         this.options = options;
         this.sdata = sdata;
         this.path = name;
+        this._value = options.default;
         this._settings = settings;
 
         this._listener = sdata.onValue(name, (value) => {

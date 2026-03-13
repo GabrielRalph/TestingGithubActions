@@ -92,6 +92,7 @@ eyegaze:
       <p> 🎯 Independent use → 0.9 </p>
     shownAreas: [[[2,2],[0,2]]]
     modalArea: [[0,1],[0,2]]
+    dwellTestArea: [[3,3],[0,2]]
     gridSize: [3, 4]
 
   - window: settings
@@ -109,6 +110,7 @@ eyegaze:
 
     shownAreas: [[[2,2],[0,2]]]
     modalArea: [[0,1],[0,2]]
+    dwellTestArea: [[3,3],[0,2]]
     gridSize: [3, 4]
 
   - window: default
@@ -140,6 +142,7 @@ switch:
     shownAreas: [[[1,1],[0,2]]]
     modalArea: [[2,3],[0,2]]
     dwellTestArea: [[0,0],[0,2]]
+    dwellMode: "switchTime"
     gridSize: [3, 4]
 
   - window: settings
@@ -158,6 +161,7 @@ switch:
     shownAreas: [[[1,1],[0,2]]]
     modalArea: [[2,3],[0,2]]
     dwellTestArea: [[0,0],[0,2]]
+    dwellMode: "switchTime"
     gridSize: [3, 4]
 
   - window: settings
@@ -177,6 +181,7 @@ switch:
     shownAreas: [[[1,1],[0,2]]]
     modalArea: [[2,3],[0,2]]
     dwellTestArea: [[0,0],[0,2]]
+    dwellMode: "switchTime"
     gridSize: [3, 4]
 
   - window: default

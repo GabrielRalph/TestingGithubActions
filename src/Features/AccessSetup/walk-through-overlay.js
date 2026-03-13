@@ -24,7 +24,6 @@ class Modal extends HideShowTransition {
         this._rows = rows;
         this._cols = cols;
         
-        console.log("Setting modal position with:", {xStart, xEnd, yStart, yEnd, rows, cols});
         const left = (xStart / cols) * 100 + "%";
         const width = ((xEnd - xStart + 1) / cols) * 100 + "%";
 
@@ -117,7 +116,6 @@ class InstructionModal extends Modal {
     }
   
     setButtonStates(canGoBack, canGoNext) {
-        console.log("Setting button states:", {canGoBack, canGoNext});
         this.prevButton.disabled = !canGoBack;
         this.nextButton.disabled = !canGoNext;
     }
@@ -161,13 +159,12 @@ export class WalkThroughOverlayElement extends SquidlyFeatureWindow {
 
     async addLoader() {}
 
-    async startDwelling() {
+    async startDwelling(mode) {
         let button = this.dwellTestModal.button;
         if (this._dwellShowing) return;
         this._dwellShowing = true;
-        console.log("Starting dwell test...", button.isVisible);
         while (this._dwellShowing) {
-            await this.addLoader(button, "switchTime");
+            await this.addLoader(button, mode);
             if (!button.isVisible) {
                 break;
             }
@@ -193,7 +190,7 @@ export class WalkThroughOverlayElement extends SquidlyFeatureWindow {
         if (step.dwellTestArea) {
             this.dwellTestModal.setPosition(...step.dwellTestArea, ...step.gridSize);
             this.dwellTestModal.show();
-            this.startDwelling();
+            if (step.dwellTime) this.startDwelling(step.dwellTime);
         } else {
             this.dwellTestModal.hide();
             this.stopDwelling();

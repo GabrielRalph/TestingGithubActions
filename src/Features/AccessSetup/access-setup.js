@@ -74,7 +74,6 @@ class AccessSetupStartingWindow extends SquidlyFeatureWindow {
     }  
     
     open(){
-        console.log("Opening Access Setup Starting Window...");
         this.reset();
         this.root.show();
     }
@@ -124,7 +123,6 @@ export default class AccessSetup extends Features {
             },
             "method-select": async (e) => {
                 let {method} = e;
-                console.log("Selected method:", method);
                 this.sdata.set("state", {method, step: 0});
             }
         }
@@ -137,7 +135,6 @@ export default class AccessSetup extends Features {
         this.setupOverlay = new WalkThroughOverlayElement();
         this.setupOverlay.addLoader = async (button, mode) => {
             let time = session.settings.get("participant/access/"+mode);
-            console.log(`Adding loader to button:`, button, `with time:`, time);
             await session.accessControl.addLoaderToButton(button, time);
         }
 
@@ -176,7 +173,7 @@ export default class AccessSetup extends Features {
         if (this.sdata.isHost) {
             this.session.toolBar.addMenuItem("access", {
                 name: "access-setup",
-                displayValue: "Access Setup",
+                text: "Access Setup",
                 symbol: "access",
                 onSelect: (e) => {
                     this.sdata.set("state", "start");

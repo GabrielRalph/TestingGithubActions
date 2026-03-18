@@ -205,11 +205,9 @@ function rewriteJsDocImports({ outDir = 'build' } = {}) {
             let newCode = code;
             for (let block of jsDocBlocks) {
                 let blockText = block[0];
-                console.log(blockText);
                 let importMatches = blockText.matchAll(
                     /import[\s\n\*]*\([\s\n\*]*["'](.*)["'][\s\n\*]*\)[\s\n\*]*\.[\s\n\*]*(\w+)/g
                 );
-
                 for (let match of importMatches) {
                     newCode = newCode.replace(match[0], () => {
                         const importedName = match[2];

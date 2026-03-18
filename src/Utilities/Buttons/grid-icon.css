@@ -210,7 +210,7 @@ grid-layout {
     display: none;
 }
 
-.grid-icon[type="lightRed"], .grid-icon[type="topic-lightRed"] {
+.grid-icon[color-theme="lightRed"] {
     --main: hsl(0, 100%, 89%);
     --tab: hsl(0, 56%, 64%);
     --text: black;
@@ -223,20 +223,20 @@ grid-layout {
     --icon-color-hover: hsl(0, 100%, 13.35%);
 }
 
-.grid-icon[type="darkRed"], .grid-icon[type="topic-darkRed"] {
+.grid-icon[color-theme="darkRed"] {
     --main: hsl(0, 70%, 38%);
     --tab: hsl(0, 56%, 28%);
+    --icon-color: hsl(0, 5%, 96%);
+    --icon-color-hover: white;
     --text: white;
     --main-hover: hsl(0, 66.5%, 30.400000000000002%);
     --tab-hover: hsl(0, 53.199999999999996%, 22.400000000000002%);
     --main-active: hsl(0, 73.5%, 24.7%);
     --tab-active: hsl(0, 58.800000000000004%, 18.2%);
     --outline: hsl(0, 67.2%, 16.8%);
-    --icon-color: hsl(0, 70%, 11.4%);
-    --icon-color-hover: hsl(0, 70%, 5.7%);
 }
 
-.grid-icon[type="lightOrange"], .grid-icon[type="topic-lightOrange"] {
+.grid-icon[color-theme="lightOrange"] {
     --main: hsl(30, 100%, 85%);
     --tab: hsl(30, 70%, 55%);
     --text: black;
@@ -249,7 +249,7 @@ grid-layout {
     --icon-color-hover: hsl(30, 100%, 12.75%);
 }
 
-.grid-icon[type="darkOrange"], .grid-icon[type="topic-darkOrange"] {
+.grid-icon[color-theme="darkOrange"] {
     --main: hsl(30, 80%, 45%);
     --tab: hsl(30, 70%, 35%);
     --text: white;
@@ -262,7 +262,7 @@ grid-layout {
     --icon-color-hover: hsl(30, 80%, 6.75%);
 }
 
-.grid-icon[type="lightGold"], .grid-icon[type="topic-lightGold"] {
+.grid-icon[color-theme="lightGold"] {
     --main: hsl(42, 100%, 81%);
     --tab: hsl(42, 70%, 55%);
     --text: black;
@@ -275,7 +275,7 @@ grid-layout {
     --icon-color-hover: hsl(42, 100%, 12.15%);
 }
 
-.grid-icon[type="darkGold"], .grid-icon[type="topic-darkGold"] {
+.grid-icon[color-theme="darkGold"] {
     --main: hsl(42, 75%, 48%);
     --tab: hsl(42, 70%, 38%);
     --text: white;
@@ -288,7 +288,7 @@ grid-layout {
     --icon-color-hover: hsl(42, 75%, 7.199999999999999%);
 }
 
-.grid-icon[type="lightGreen"], .grid-icon[type="topic-lightGreen"] {
+.grid-icon[color-theme="lightGreen"] {
     --main: hsl(108, 100%, 83%);
     --tab: hsl(108, 70%, 62%);
     --text: black;
@@ -301,7 +301,7 @@ grid-layout {
     --icon-color-hover: hsl(108, 100%, 12.45%);
 }
 
-.grid-icon[type="darkGreen"], .grid-icon[type="topic-darkGreen"] {
+.grid-icon[color-theme="darkGreen"] {
     --main: hsl(95, 50%, 40%);
     --tab: hsl(95, 50%, 30%);
     --text: white;
@@ -314,7 +314,7 @@ grid-layout {
     --icon-color-hover: hsl(95, 50%, 6%);
 }
 
-.grid-icon[type="lightTeal"], .grid-icon[type="topic-lightTeal"] {
+.grid-icon[color-theme="lightTeal"] {
     --main: hsl(150, 100%, 85%);
     --tab: hsl(150, 70%, 55%);
     --text: black;
@@ -327,7 +327,7 @@ grid-layout {
     --icon-color-hover: hsl(150, 100%, 12.75%);
 }
 
-.grid-icon[type="darkTeal"], .grid-icon[type="topic-darkTeal"] {
+.grid-icon[color-theme="darkTeal"] {
     --main: hsl(150, 90%, 33%);
     --tab: hsl(150, 90%, 23%);
     --text: white;
@@ -340,7 +340,7 @@ grid-layout {
     --icon-color-hover: hsl(150, 90%, 4.95%);
 }
 
-.grid-icon[type="lightBlue"], .grid-icon[type="topic-lightBlue"] {
+.grid-icon[color-theme="lightBlue"] {
     --main: hsl(190, 100%, 85%);
     --tab: hsl(190, 70%, 55%);
     --text: black;
@@ -353,7 +353,7 @@ grid-layout {
     --icon-color-hover: hsl(190, 100%, 12.75%);
 }
 
-.grid-icon[type="darkBlue"], .grid-icon[type="topic-darkBlue"] {
+.grid-icon[color-theme="darkBlue"] {
     --main: hsl(190, 85%, 33%);
     --tab: hsl(190, 85%, 23%);
     --text: white;
@@ -366,7 +366,7 @@ grid-layout {
     --icon-color-hover: hsl(190, 85%, 4.95%);
 }
 
-.grid-icon[type="lightIndigo"], .grid-icon[type="topic-lightIndigo"] {
+.grid-icon[color-theme="lightIndigo"] {
     --main: hsl(220, 100%, 89%);
     --tab: hsl(220, 70%, 55%);
     --text: black;
@@ -379,7 +379,7 @@ grid-layout {
     --icon-color-hover: hsl(220, 100%, 13.35%);
 }
 
-.grid-icon[type="darkIndigo"], .grid-icon[type="topic-darkIndigo"] {
+.grid-icon[color-theme="darkIndigo"] {
     --main: hsl(220, 50%, 45%);
     --tab: hsl(220, 50%, 35%);
     --text: white;
@@ -392,7 +392,7 @@ grid-layout {
     --icon-color-hover: hsl(220, 50%, 6.75%);
 }
 
-.grid-icon[type="lightPurple"], .grid-icon[type="topic-lightPurple"] {
+.grid-icon[color-theme="lightPurple"] {
     --main: hsl(270, 100%, 91%);
     --tab: hsl(270, 70%, 55%);
     --text: black;
@@ -405,7 +405,7 @@ grid-layout {
     --icon-color-hover: hsl(270, 100%, 13.65%);
 }
 
-.grid-icon[type="darkPurple"], .grid-icon[type="topic-darkPurple"] {
+.grid-icon[color-theme="darkPurple"] {
     --main: hsl(270, 35%, 45%);
     --tab: hsl(270, 35%, 35%);
     --text: white;
@@ -418,20 +418,20 @@ grid-layout {
     --icon-color-hover: hsl(270, 35%, 6.75%);
 }
 
-.grid-icon[type="action"], .grid-icon[type="topic-action"] {
-    --main: hsla(11, 100%, 33%, 1.00);
-    --main-hover: hsla(11, 100%, 23%, 1.00);
-    --main-active: hsla(11, 96%, 18%, 1.00);
-    --tab: hsla(11, 100%, 25%, 1.00);
-    --tab-hover: hsla(11, 100%, 15%, 1.00);
-    --tab-active: hsla(11, 92%, 9%, 1.00);
+.grid-icon[color-theme="action"] {
+    --main: hsl(11, 100%, 33%);
+    --main-hover: hsl(11, 100%, 23%);
+    --main-active: hsl(11, 96%, 18%);
+    --tab: hsl(11, 100%, 25%);
+    --tab-hover: hsl(11, 100%, 15%);
+    --tab-active: hsl(11, 92%, 9%);
     --icon-color: hsl(0, 5%, 96%);
     --icon-color-hover: white;
     --text: white;
     --outline: hsl(11, 100%, 15%);
 }
 
-.grid-icon[type="white"], .grid-icon[type="topic-white"] {
+.grid-icon[color-theme="white"] {
     --main: hsl(0, 0%, 100%);
     --tab: hsl(0, 0%, 90%);
     --text: black;
@@ -444,7 +444,7 @@ grid-layout {
     --icon-color-hover: hsl(0, 0%, 15%);
 }
 
-.grid-icon[type="topic"] {
+.grid-icon[color-theme="topic"] {
     --main: hsl(35, 100%, 84%);
     --tab: hsl(35, 63%, 56%);
     --text: black;
@@ -457,7 +457,7 @@ grid-layout {
     --icon-color-hover: hsl(35, 100%, 12.6%);
 }
 
-.grid-icon[type="normal"], .grid-icon[type="topic-normal"] {
+.grid-icon[color-theme="normal"] {
     --main: hsl(211, 100%, 83%);
     --tab: hsl(211, 70%, 62%);
     --text: black;
@@ -470,7 +470,7 @@ grid-layout {
     --icon-color-hover: hsl(211, 100%, 12.45%);
 }
 
-.grid-icon[type="starter"], .grid-icon[type="topic-starter"] {
+.grid-icon[color-theme="starter"] {
     --main: hsl(102, 74%, 76%);
     --tab: hsl(102, 70%, 61%);
     --text: black;
@@ -483,7 +483,7 @@ grid-layout {
     --icon-color-hover: hsl(102, 74%, 11.4%);
 }
 
-.grid-icon[type="noun"], .grid-icon[type="topic-noun"] {
+.grid-icon[color-theme="noun"] {
     --main: hsl(257, 100%, 89%);
     --tab: hsl(257, 56%, 64%);
     --text: black;
@@ -496,7 +496,7 @@ grid-layout {
     --icon-color-hover: hsl(257, 100%, 13.35%);
 }
 
-.grid-icon[type="adjective"], .grid-icon[type="topic-adjective"] {
+.grid-icon[color-theme="adjective"] {
     --main: hsl(47, 100%, 79%);
     --tab: hsl(47, 57%, 54%);
     --text: black;
@@ -509,7 +509,7 @@ grid-layout {
     --icon-color-hover: hsl(47, 100%, 11.85%);
 }
 
-.grid-icon[type="verb"], .grid-icon[type="topic-verb"] {
+.grid-icon[color-theme="verb"] {
     --main: hsl(353, 100%, 81%);
     --tab: hsl(353, 68%, 66%);
     --text: black;
@@ -522,7 +522,7 @@ grid-layout {
     --icon-color-hover: hsl(353, 100%, 12.15%);
 }
 
-.grid-icon[type="emphasis"], .grid-icon[type="topic-emphasis"] {
+.grid-icon[color-theme="emphasis"] {
     --main: hsl(18, 77%, 50%);
     --tab: hsl(18, 86%, 41%);
     --text: white;

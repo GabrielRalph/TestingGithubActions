@@ -180,33 +180,96 @@ function relURLAssetPlugin({ srcDir = 'src', outDir = 'build/assets' } = {}) {
     };
 }
 
+function getJSDOCCommentBlocks(code) {
+    const commentBlocks = [];
+    const regex = /\/\*\*([\s\S]*?)\*\//g;
+    let match;
+    while ((match = regex.exec(code)) !== null) {
+        commentBlocks.push(match);
+    }
+    return commentBlocks;
+}
+
+
+function rewriteJsDocImports({ outDir = 'build' } = {}) {
+    return {
+        name: 'rewrite-jsdoc-imports',
+        transform(code, id) {
+            // Only touch JS modules inside src/
+            if (!id.startsWith(path.resolve('src'))) return null;
+
+
+            // Find all JSDOC comment blocks and look for import(...) statements, 
+            // replacing them with just the imported name.
+            const jsDocBlocks = getJSDOCCommentBlocks(code);
+            let newCode = code;
+            for (let block of jsDocBlocks) {
+                let blockText = block[0];
+                console.log(blockText);
+                let importMatches = blockText.matchAll(
+                    /import[\s\n\*]*\([\s\n\*]*["'](.*)["'][\s\n\*]*\)[\s\n\*]*\.[\s\n\*]*(\w+)/g
+                );
+
+                for (let match of importMatches) {
+                    newCode = newCode.replace(match[0], () => {
+                        const importedName = match[2];
+                        return importedName;
+                    });
+                }
+            }
+
+            // Additionally, remove any typedefs that are just of the form {TypeName} TypeName,
+            //  as these are redundant after the above replacement.
+            newCode = newCode.replace(
+                /@typedef[\s\n]*{[\s\n]*(\w+)[\s\n]*}[\s\n]*\1/g,
+                ""
+            )
+
+            return newCode === code ? null : { code: newCode, map: null };
+        }
+    };
+}
+
 // Delete all files in dist (synchronously)
 if (fs.existsSync(outputDir)) {
     fs.rmSync(outputDir, { recursive: true, force: true });
 }
 
-export default {
-    input: 'src/squidly-session.js',
-    output: {
-        dir: outputDir,
-        format: 'es',
+export default [
+    {
+        input: ['src/squidly-session.js', 'src/Utilities/utilities.js'],
+        output: {
+            dir: outputDir,
+            format: 'es',
+            plugins: [
+                terser({
+                    mangle: {
+                        toplevel: true
+                    },
+                    compress: {
+                        passes: 3,
+                        pure_getters: true,
+                        unsafe: true
+                    },
+                    format: {
+                        comments: false
+                    }
+                })
+            ]
+        },
         plugins: [
-			terser({
-				mangle: {
-					toplevel: true
-				},
-				compress: {
-					passes: 3,
-					pure_getters: true,
-					unsafe: true
-				},
-				format: {
-					comments: false
-				}
-			})
-		]
+            relURLAssetPlugin(),
+        ]
     },
-    plugins: [
-        relURLAssetPlugin(),
-    ]
-};
+    {
+        input: 'src/Utilities/utilities.js',
+        output: {
+            file: outputDir + '/utilities-dev.js',
+            format: 'es',
+        },
+        plugins: [
+            relURLAssetPlugin(),
+            rewriteJsDocImports()
+        ]
+    }
+];

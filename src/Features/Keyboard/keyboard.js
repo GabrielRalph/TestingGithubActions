@@ -204,7 +204,7 @@ export default class KeyboardFeature extends Features {
             keyboard: {
                 type: "area",
                 area: "fullAspectArea",
-                index: 250,
+                index: 262,
             }
         }
     }

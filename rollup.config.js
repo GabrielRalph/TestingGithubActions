@@ -29,7 +29,7 @@ function getURLSFromCSS(css) {
     return urls;
 }
 
-function relURLAssetPlugin({ srcDir = 'src', outDir = 'build/assets' } = {}) {
+function relURLAssetPlugin({ srcDir = 'src'} = {}) {
     const fileMap = {};
     const cssAssetMap = {};
     const cssToProcess = [];

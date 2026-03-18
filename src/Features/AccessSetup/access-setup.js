@@ -173,7 +173,7 @@ export default class AccessSetup extends Features {
         if (this.sdata.isHost) {
             this.session.toolBar.addMenuItem("access", {
                 name: "access-setup",
-                text: "Access Setup",
+                text: "access</br>setup",
                 symbol: "access",
                 onSelect: (e) => {
                     this.sdata.set("state", "start");
@@ -287,7 +287,7 @@ export default class AccessSetup extends Features {
             setupOverlay: {
                 type: "area",
                 area: "fullAspectArea",
-                index: 210,
+                index: 110,
             }
         }
     }

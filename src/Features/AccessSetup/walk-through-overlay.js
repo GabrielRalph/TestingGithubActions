@@ -163,8 +163,10 @@ export class WalkThroughOverlayElement extends SquidlyFeatureWindow {
         let button = this.dwellTestModal.button;
         if (this._dwellShowing) return;
         this._dwellShowing = true;
+        console.log("adding dwell loader")
         while (this._dwellShowing) {
             await this.addLoader(button, mode);
+            console.log(button.isVisible);
             if (!button.isVisible) {
                 break;
             }
@@ -190,7 +192,7 @@ export class WalkThroughOverlayElement extends SquidlyFeatureWindow {
         if (step.dwellTestArea) {
             this.dwellTestModal.setPosition(...step.dwellTestArea, ...step.gridSize);
             this.dwellTestModal.show();
-            if (step.dwellTime) this.startDwelling(step.dwellTime);
+            if (step.dwellMode) this.startDwelling(step.dwellMode);
         } else {
             this.dwellTestModal.hide();
             this.stopDwelling();

@@ -1,3 +1,4 @@
+export { AccessEvent, AccessClickEvent, AccessButton } from "./Buttons/access-buttons.js";
 export * from "./Buttons/grid-icon.js";
 export * from "./access-textarea.js";
 export * from "./hide-show.js";

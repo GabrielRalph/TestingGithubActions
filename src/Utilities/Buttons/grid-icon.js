@@ -2,6 +2,7 @@ import { SvgPlus, Vector } from "../../SvgPlus/4.js";
 import { Icon, isIconName } from "../Icons/icons.js";
 import { MarkdownElement } from "../markdown.js";
 import { relURL } from "../usefull-funcs.js";
+import { GRID_ICON_THEMES } from "./grid-icon-themes.js";
 
 /**
  * GridIconSymbol can be a string or an object defining the icon symbol.
@@ -13,7 +14,9 @@ import { relURL } from "../usefull-funcs.js";
 
 /**
  * @typedef {Object} GridIconOptions
- * @property {import("./color-theme.js").GridIconTypes} type - The type of the icon, which determines its appearance. 
+ * @property {import
+ * ("./grid-icon-themes.js").GridIconType} type - The type of the icon, which determines its appearance. 
+ * 
  *                           general type format: [topic-]colorTheme
  *                           see COLOR_THEMES for available color themes.
  * @property {string} displayValue - The text to display below the icon.
@@ -26,104 +29,84 @@ import { relURL } from "../usefull-funcs.js";
  * @property {Object.<string, Function>} [events] - An object mapping event names to event handler functions.
  */
 
-const BORDER_RADIUS_PERCENTAGE = 0.015;
-const BORDER_SIZE = 4;
 
-function plainCard(size, border = BORDER_SIZE) {
-    let inSize = size.sub(border);
-    let g = Math.min(window.innerWidth, window.innerHeight) * BORDER_RADIUS_PERCENTAGE;
-    return `
-        <rect class = "card" x = "${border/2}" y = "${border/2}" width = "${inSize.x}"  height = "${inSize.y}" rx = "${g}" ry = "${g}" />
-        
-        <rect class = "card for-hover" x = "${border/2}" y = "${border/2}" width = "${inSize.x}"  height = "${inSize.y}" rx = "${g}" ry = "${g}" />
-        <rect class = "outline for-hover" stroke-width = "${border}"  x = "${border/2}" y = "${border/2}" width = "${inSize.x}"  height = "${inSize.y}" rx = "${g}" ry = "${g}" />
-        
-        <rect class = "card for-active" x = "${border/2}" y = "${border/2}" width = "${inSize.x}"  height = "${inSize.y}" rx = "${g}" ry = "${g}" />
-        <rect class = "outline for-active" stroke-width = "${border}"  x = "${border/2}" y = "${border/2}" width = "${inSize.x}"  height = "${inSize.y}" rx = "${g}" ry = "${g}" />
-        `
-}
+const CARD_RENDERERS = {
+    BORDER_RADIUS_PERCENTAGE: 0.015,
+    BORDER_SIZE: 4,
 
-function folderCard(size, border = BORDER_SIZE) {
-    let inSize = size.sub(border);
-    let g = Math.min(window.innerWidth, window.innerHeight) * BORDER_RADIUS_PERCENTAGE;
-    let w = inSize.x;
-    let b = w * 0.45;
-
-    g = Math.min(b / 3, g);
-
-    let t = g / 3;
-    let h = inSize.y;
-
-    let p0 = new Vector(border/2, border/2 + 2*g);
-    let p1 = p0.addV(-g);
-    let p2 = p1.add(g, -g);
-
-    let c2 = p1.addH(b);
-    let c1 = c2.add(-g);
-    
-    let tv = new Vector(t, 0);
-    let tv2 = tv.rotate(-Math.PI * 3 / 4);
-
-    let p3 = c1.sub(tv);
-    let p4 = c1.sub(tv2);
-
-    let p5 = c2.add(tv2);
-    let p6 = c2.add(tv);
-
-    let p7 = p1.addH(w - g);
-    let p8 = p0.addH(w);
-
-    let rg = new Vector(g);
-    let rt = new Vector(t * Math.tan(Math.PI * 3 / 8));
-
-    let tabPath = `M${p0}L${p1}A${rg},0,0,1,${p2}L${p3}A${rt},0,0,1,${p4}L${p5}A${rt},0,0,0,${p6}L${p7}A${rg},0,0,1,${p8}Z`
-
-    let p9 = p8.addV(h - 3 * g);
-    let p10 = p9.add(-g, g);
-
-    let p11 = p10.addH(2 * g - w);
-    let p12 = p11.sub(g);
-
-    let card = `M${p8.addV(-0.1)}L${p9}A${rg},0,0,1,${p10}L${p11}A${rg},0,0,1,${p12}L${p0.addV(-0.1)}Z`
-    let outline = `M${p0}L${p1}A${rg},0,0,1,${p2}L${p3}A${rt},0,0,1,${p4}L${p5}A${rt},0,0,0,${p6}L${p7}A${rg},0,0,1,${p8}L${p9}A${rg},0,0,1,${p10}L${p11}A${rg},0,0,1,${p12}Z`;
-    return  `
-
-            <path class = "card" d = "${card}" />
-            <path class = "tab" d = "${tabPath}" />
+    plain(size, border = this.BORDER_SIZE) {
+        let inSize = size.sub(border);
+        let g = Math.min(window.innerWidth, window.innerHeight) * this.BORDER_RADIUS_PERCENTAGE;
+        return `
+            <rect class = "card" x = "${border/2}" y = "${border/2}" width = "${inSize.x}"  height = "${inSize.y}" rx = "${g}" ry = "${g}" />
             
-            <path class = "card for-hover" d = "${card}" />
-            <path class = "tab for-hover" d = "${tabPath}" />
-            <path class = "outline for-hover" stroke-width = "${border}"  d = "${outline}" />
+            <rect class = "card for-hover" x = "${border/2}" y = "${border/2}" width = "${inSize.x}"  height = "${inSize.y}" rx = "${g}" ry = "${g}" />
+            <rect class = "outline for-hover" stroke-width = "${border}"  x = "${border/2}" y = "${border/2}" width = "${inSize.x}"  height = "${inSize.y}" rx = "${g}" ry = "${g}" />
             
-            <path class = "card for-active" d = "${card}" />
-            <path class = "tab for-active" d = "${tabPath}" />
-            <path class = "outline for-active" stroke-width = "${border}" d = "${outline}" />
+            <rect class = "card for-active" x = "${border/2}" y = "${border/2}" width = "${inSize.x}"  height = "${inSize.y}" rx = "${g}" ry = "${g}" />
+            <rect class = "outline for-active" stroke-width = "${border}"  x = "${border/2}" y = "${border/2}" width = "${inSize.x}"  height = "${inSize.y}" rx = "${g}" ry = "${g}" />
             `
+    },
+    
+    folder(size, border = this.BORDER_SIZE) {
+        console.log(this.BORDER_SIZE)
+        let inSize = size.sub(border);
+        let g = Math.min(window.innerWidth, window.innerHeight) * this.BORDER_RADIUS_PERCENTAGE;
+        let w = inSize.x;
+        let b = w * 0.45;
+    
+        g = Math.min(b / 3, g);
+    
+        let t = g / 3;
+        let h = inSize.y;
+    
+        let p0 = new Vector(border/2, border/2 + 2*g);
+        let p1 = p0.addV(-g);
+        let p2 = p1.add(g, -g);
+    
+        let c2 = p1.addH(b);
+        let c1 = c2.add(-g);
+        
+        let tv = new Vector(t, 0);
+        let tv2 = tv.rotate(-Math.PI * 3 / 4);
+    
+        let p3 = c1.sub(tv);
+        let p4 = c1.sub(tv2);
+    
+        let p5 = c2.add(tv2);
+        let p6 = c2.add(tv);
+    
+        let p7 = p1.addH(w - g);
+        let p8 = p0.addH(w);
+    
+        let rg = new Vector(g);
+        let rt = new Vector(t * Math.tan(Math.PI * 3 / 8));
+    
+        let tabPath = `M${p0}L${p1}A${rg},0,0,1,${p2}L${p3}A${rt},0,0,1,${p4}L${p5}A${rt},0,0,0,${p6}L${p7}A${rg},0,0,1,${p8}Z`
+    
+        let p9 = p8.addV(h - 3 * g);
+        let p10 = p9.add(-g, g);
+    
+        let p11 = p10.addH(2 * g - w);
+        let p12 = p11.sub(g);
+    
+        let card = `M${p8.addV(-0.1)}L${p9}A${rg},0,0,1,${p10}L${p11}A${rg},0,0,1,${p12}L${p0.addV(-0.1)}Z`
+        let outline = `M${p0}L${p1}A${rg},0,0,1,${p2}L${p3}A${rt},0,0,1,${p4}L${p5}A${rt},0,0,0,${p6}L${p7}A${rg},0,0,1,${p8}L${p9}A${rg},0,0,1,${p10}L${p11}A${rg},0,0,1,${p12}Z`;
+        return  `
+    
+                <path class = "card" d = "${card}" />
+                <path class = "tab" d = "${tabPath}" />
+                
+                <path class = "card for-hover" d = "${card}" />
+                <path class = "tab for-hover" d = "${tabPath}" />
+                <path class = "outline for-hover" stroke-width = "${border}"  d = "${outline}" />
+                
+                <path class = "card for-active" d = "${card}" />
+                <path class = "tab for-active" d = "${tabPath}" />
+                <path class = "outline for-active" stroke-width = "${border}" d = "${outline}" />
+                `
+    }
 }
-
-// function parseCardType(type) {
-//     let isTopic = null;
-//     let colorTheme = null;
-
-//     if (typeof type === "string") {
-//         isTopic = false;
-//         let parts = type.split("-");
-//         if (parts.length > 1 && parts[0] === "topic") {
-//             isTopic = true;
-//             colorTheme = parts[1];
-//         } else if (parts.length == 1) {
-//             if (type === "topic") {
-//                 colorTheme = "topic";
-//                 isTopic = true;
-//             } else {
-//                 colorTheme = type;
-//             }
-//         }
-//     }
-
-//     return {isTopic, colorTheme};
-// }
-
 
 /** A GridIconSymbol represents the image from a grid icon. */
 export class GridIconSymbol extends SvgPlus{
@@ -185,20 +168,23 @@ export class GridIconSymbol extends SvgPlus{
 }
 
 export class GridCard extends SvgPlus { 
+    /**
+     * @param {HTMLElement|string} el - The element or tag name to create for the grid card.
+     * @param {import("./grid-icon-themes.js")
+     * .
+     * GridIconType} type - The type of the grid card, which determines its color theme and appearance.
+     */
     constructor(el, type) {
         super(el);
         this.class = "grid-icon";
 
-        this.type = type;
-
         this.cardIcon = this.createChild("svg", {class: "card-icon"});
         this.content = this.createChild("div", {class: "content"});
 
-        const isTopic = type && type.startsWith("topic");
-       
-        this.cardRenderer = isTopic ? folderCard : plainCard;
         let rs = new ResizeObserver(this.onresize.bind(this));
         rs.observe(this);
+
+        this.type = type;
     }
 
     /** 
@@ -255,10 +241,22 @@ export class GridCard extends SvgPlus {
 
     /** @param {string} type */
     set type(type) {
-        this.setAttribute("type", type);
-        // this.classList.remove(this.type);
+        let theme = {card: "plain", theme: "white"};
+
+        if (type && type in GRID_ICON_THEMES) {
+            theme = GRID_ICON_THEMES[type];
+        } else if (typeof type === "object" && type !== null && "theme" in type) {
+            theme.theme = type.theme;
+            theme.card = type.card || theme.card;
+        }
+
+        this.cardRenderer = (CARD_RENDERERS[theme.card] || CARD_RENDERERS.plain).bind(CARD_RENDERERS);
+
+        this.setAttribute("color-theme", theme.theme);
+        this.setAttribute("card", theme.card);
+
         this._type = type;
-        // this.classList.add(type);
+
         this.onresize();
     }
 

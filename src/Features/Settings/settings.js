@@ -654,6 +654,10 @@ export default class SettingsFeature extends Features {
             });
         });
 
+        // Initially log the profile being used for the session.
+        if (!pid && sessionInfo.profileID) {
+            this.sdata.logChange("settings.profile", {value: sessionInfo.profileID});
+        }
         pid = pid || sessionInfo.profileID || null;
         
         await Settings.initialise(hostUID, pid);

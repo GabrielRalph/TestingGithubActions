@@ -637,6 +637,8 @@ export default class SettingsFeature extends Features {
 
     async initialise() {
        let hostUID = this.sdata.hostUID;
+
+       let sessionInfo = await Settings.getSessionPresets(this.sdata.sid);
        
        // Wait for the profileID to be loaded from firebase, 
        // then initialise the settings with that profileID
@@ -651,6 +653,9 @@ export default class SettingsFeature extends Features {
                 }
             });
         });
+
+        pid = pid || sessionInfo.profileID || null;
+        
         await Settings.initialise(hostUID, pid);
 
         // Set the settings layout in the settings window        

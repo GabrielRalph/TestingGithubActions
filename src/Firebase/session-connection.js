@@ -303,4 +303,11 @@ export class SessionConnection extends FirebaseFrame {
             this._onLeave();
         }
     }
+
+    static async getSIDFromProxy(proxyID) {
+        let res = await FB.callFunction("sessions-getSIDFromProxy", {proxyID});
+        console.log(res)
+        // return data.sid;
+        return res.data.sid;
+    }
 }

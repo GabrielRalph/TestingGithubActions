@@ -547,55 +547,64 @@ export class SquidlySessionElement extends ShadowElement {
 
   async initialiseSessionConnection() {
     try{
-    let error = [false, ""];
-    setLoadState("connection", 0, "Connecting to session");
-    if (sessionConnection === null) {
-      let {key} = getQueryKey();
-      if (key) {
-        sessionConnection = new SessionConnection(key);
+      let error = [false, ""];
+      setLoadState("connection", 0, "Connecting to session");
+      if (sessionConnection === null) {
+        let {key, isProxy} = getQueryKey();
+        console.log("proxy ", key, isProxy);
+
+        if (isProxy && key) {
+          // Call database function to get the real SID from the proxy SID
+          key = await SessionConnection.getSIDFromProxy(key);
+
+        }
+
+        if (key) {
+          // The key provided is a proxy SID
+          sessionConnection = new SessionConnection(key);
+        } else {
+          error = [ERROR_CODES.NO_SESSION, "no key provided"];
+        }
+      }
+
+      if (error[0] === false && sessionConnection !== null) {
+        error = await sessionConnection.join();
+      }
+
+      let [code] = error;
+      if (code !== false) {
+        switch (code) {
+          case ERROR_CODES.NO_SESSION:
+            this.loaderText = `The session you are trying to connect no longer exists.`;
+            break;
+          case ERROR_CODES.PERMISSIONS:
+            this.loaderText = `You do not currently have access to start this session.</br>
+                      please check your licence is still valid.`;
+            break;
+          case ERROR_CODES.SESSION_NOT_STARTED:
+            this.loaderText = `The session has not been started, please wait for the </br>
+                      host to start the session.`;
+            await sessionConnection.waitForStart();
+            await this.initialiseSessionConnection();
+            break;
+          case ERROR_CODES.WAITING_APPROVAL:
+            this.loaderText = `The host has not yet granted you approval to join. </br> Please wait for the host to approve your request.`;
+            await sessionConnection.waitForApproval();
+            await this.initialiseSessionConnection();
+            break;
+          case ERROR_CODES.IN_SESSION:
+            this.loaderText = `You are currently in another session please end this session before joining a new session.`;
+            break;
+          default:
+            this.loaderText = `An unexpected error occured please refresh and try again. </br> ${error}`;
+        }
       } else {
-        error = [ERROR_CODES.NO_SESSION, "no key provided"];
+        setLoadState("connection", 1);
       }
-    }
 
-    if (error[0] === false && sessionConnection !== null) {
-      error = await sessionConnection.join();
-    }
-
-    let [code] = error;
-    if (code !== false) {
-      switch (code) {
-        case ERROR_CODES.NO_SESSION:
-          this.loaderText = `The session you are trying to connect no longer exists.`;
-          break;
-        case ERROR_CODES.PERMISSIONS:
-          this.loaderText = `You do not currently have access to start this session.</br>
-                     please check your licence is still valid.`;
-          break;
-        case ERROR_CODES.SESSION_NOT_STARTED:
-          this.loaderText = `The session has not been started, please wait for the </br>
-                    host to start the session.`;
-          await sessionConnection.waitForStart();
-          await this.initialiseSessionConnection();
-          break;
-        case ERROR_CODES.WAITING_APPROVAL:
-          this.loaderText = `The host has not yet granted you approval to join. </br> Please wait for the host to approve your request.`;
-          await sessionConnection.waitForApproval();
-          await this.initialiseSessionConnection();
-          break;
-        case ERROR_CODES.IN_SESSION:
-          this.loaderText = `You are currently in another session please end this session before joining a new session.`;
-          break;
-        default:
-          this.loaderText = `An unexpected error occured please refresh and try again. </br> ${error}`;
-      }
-    } else {
-      setLoadState("connection", 1);
-    }
-
-    this.endlinkHost = this.endlinkHost;
-    this.endlinkParticipant = this.endlinkParticipant;
-    }catch(e) {
+      this.endlinkHost = this.endlinkHost;
+      this.endlinkParticipant = this.endlinkParticipant;
+    } catch(e) {
       console.error("Error initialising session connection:", e.stack);
       this.loaderText = `An unexpected error occurred while connecting to the session. Please refresh and try again.`;
     }

@@ -20,6 +20,11 @@ export async function getHostPresets(hostUID) {
     return presets;
 }
 
+export async function getSessionPresets(sessionID) {
+    let info = (await FB.get(FB.ref(`sessions-v3/${sessionID}/info`))).val() || {};
+    return info;
+}
+
 const SettingOptions = _settingOptions.map(options => {
     let op = {...options};
     op.key = op.key.slice(1);

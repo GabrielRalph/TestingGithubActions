@@ -278,10 +278,11 @@ export function getQueryKey(string = window.location.search) {
     k.match(/^([-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz]{20})$/) 
     && v == "" 
   );
-
+  let isProxy = query.get("proxy") != null;
   return {
     key: key ? key[0] : null,
     options: query,
+    isProxy: isProxy
   };
 }
 

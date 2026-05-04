@@ -9,6 +9,7 @@ const AppsList = [
   "https://cursor-splash.squidly.com.au",
   "https://starfin-adventure.squidly.com.au",
   "https://lamp.squidly.com.au",
+  "https://magic-keys-3d.squidly.com.au",
   "http://127.0.0.1:5500",
   "http://127.0.0.1:5501",
 ];
@@ -71,13 +72,10 @@ class AppsFrame extends OccupiableWindow {
     });
   }
 
-
   async enterSearchMode() {
     this.search.reset(true);
     await this.search.show();
-
   }
-
 
   setGridSize(rows, cols) {
     rows = Math.max(1, Math.min(20, rows || 1));

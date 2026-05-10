@@ -10,6 +10,7 @@ const AppsList = [
   "https://starfin-adventure.squidly.com.au",
   "https://lamp.squidly.com.au",
   "https://magic-keys-3d.squidly.com.au",
+  "https://mole-pop.squidly.com.au",
   "https://slice-master.squidly.com.au",
   "http://127.0.0.1:5501",
 ];

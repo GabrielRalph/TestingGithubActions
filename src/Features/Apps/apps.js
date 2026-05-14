@@ -4,16 +4,65 @@ import { Features, OccupiableWindow } from "../features-interface.js";
 import { Vector } from "../../SvgPlus/4.js";
 import { GridIcon, GridLayout } from "../../Utilities/Buttons/grid-icon.js";
 import { AccessButton } from "../../Utilities/Buttons/access-buttons.js";
+import * as F from "../../Firebase/firebase.js";
 
-const AppsList = [
-  "https://cursor-splash.squidly.com.au",
-  "https://starfin-adventure.squidly.com.au",
-  "https://lamp.squidly.com.au",
-  "https://magic-keys-3d.squidly.com.au",
-  "https://mole-pop.squidly.com.au",
-  "https://slice-master.squidly.com.au",
-  "http://127.0.0.1:5501",
-];
+
+/**
+ * @typedef {Object} AppInfo
+ * @property {string} name - The name of the app.
+ * @property {string} title - The display title of the app.
+ * @property {string} subtitle - A brief subtitle for the app.
+ * @property {string} version - The current version of the app.
+ * @property {string} description - A brief description of the app.
+ * @property {string} icon - A URL to an icon representing the app.
+ * @property {string} author - The URL where the app can be accessed.
+ */
+
+/**
+ * @typedef {Object} AppDescriptor
+ * @property {AppInfo} info - The metadata information about the app.
+ * @property {string} html - The HTML content of the app's index page.
+ */
+
+/**
+ * Fetches the app descriptor from the given URL, which includes both the app's metadata and its HTML content.
+ * @param {string} url - The base URL where the app is hosted (e.g., "https://example.com/myapp").
+ * @returns {Promise<AppDescriptor>} An object containing the app's metadata and HTML content.
+ */
+async function getAppDescriptor(url) {
+    // Load index and info
+    try {
+        const [resInfo, resIndex] = await Promise.all([
+            fetch(url + "/info.json", { cache: "no-store" }),
+            fetch(url + "/index.html", { cache: "no-store" }),
+        ]);
+        
+        const [info, html] = await Promise.all([
+            resInfo.ok ? resInfo.json() : null,
+            resIndex.ok ? resIndex.text() : null,
+        ]);
+
+        if (info) {
+            const iconURL = new URL(info.icon, url)
+            info.icon = iconURL.href;
+        }
+    
+        return {info, html};
+    } catch (error) {
+        console.error("Error fetching app descriptor:", error);
+        return {info: null, html: null};
+    }
+}
+
+// const AppsList = [
+//   "https://cursor-splash.squidly.com.au",
+//   "https://starfin-adventure.squidly.com.au",
+//   "https://lamp.squidly.com.au",
+//   "https://magic-keys-3d.squidly.com.au",
+//   "https://mole-pop.squidly.com.au",
+//   "https://slice-master.squidly.com.au",
+//   "http://127.0.0.1:5501",
+// ];
 
 class QuizSearch extends SearchWindow {
   constructor(apps) {
@@ -841,21 +890,18 @@ export default class Apps extends Features {
       "../../Utilities/Buttons/grid-icon.css",
       import.meta,
     );
-    this.appDescriptors = await Promise.all(
-      AppsList.map(async (url) => {
-        try {
-          // Load index and info
-          const [resInfo, resIndex] = await Promise.all([
-            fetch(url + "/info.json", { cache: "no-store" }),
-            fetch(url + "/index.html", { cache: "no-store" }),
-          ]);
-          if (!resInfo.ok || !resIndex.ok)
-            throw new Error("Failed to fetch app descriptor");
-          const [info, html] = await Promise.all([
-            resInfo.json(),
-            resIndex.text(),
-          ]);
 
+    const apps = Object.values((await F.get(F.ref("apps"))).val() || {}).map(a => a.url);
+    this.appDescriptors = await Promise.all(
+      apps.map(async (url) => {
+        try {
+          
+          const { info, html } = await getAppDescriptor(url);
+          if (!info || !html) {
+            console.warn("Failed to load app descriptor from " + url);
+            return null;
+          }
+          
           info.url = url;
           let participantActive = this.sdata.isUserActive("participant");
           const session_info = {
